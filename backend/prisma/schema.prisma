@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String    @id @default(cuid())
+  username  String    @unique
+  password  String
+  name      String
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Product {
+  id           String           @id @default(cuid())
+  name         String
+  unit         String
+  currentStock Int              @default(0)
+  safetyStock  Int              @default(0)
+  bestN        Int              @default(4)
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+  history      HistoricalData[]
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@index([userId])
+}
+
+model HistoricalData {
+  id          String   @id @default(cuid())
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId   String
+  month       String
+  year        Int
+  day         Int      @default(1)
+  demand      Int
+  periodLabel String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([productId, month, year])
+  @@index([productId])
+}

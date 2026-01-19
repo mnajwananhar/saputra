@@ -1,0 +1,5 @@
+{
+  "name": "Saputra Jaya SMA Forecaster",
+  "description": "A Single Moving Average (SMA) forecasting system for Toko Sembako Saputra Jaya to optimize stock purchasing based on historical sales data.",
+  "requestFramePermissions": []
+}
