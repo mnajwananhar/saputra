@@ -4,10 +4,10 @@ import bcrypt from 'bcryptjs';
 // Auth API - Query User table directly (username/password login)
 export const authApi = {
   login: async (username: string, password: string) => {
-    // Query user by username
+    // Query user by username - INCLUDE ROLE!
     const { data: user, error } = await supabase
       .from('User')
-      .select('id, username, password, name')
+      .select('id, username, password, name, role')
       .eq('username', username)
       .single();
     
@@ -26,7 +26,8 @@ export const authApi = {
       user: {
         id: user.id,
         username: user.username,
-        name: user.name
+        name: user.name,
+        role: user.role || 'employee' // Include role!
       }
     };
   },

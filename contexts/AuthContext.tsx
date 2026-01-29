@@ -5,6 +5,7 @@ interface User {
   id: string;
   username: string;
   name: string;
+  role: string;
 }
 
 interface AuthContextType {
@@ -12,6 +13,7 @@ interface AuthContextType {
   user: User | null;
   login: (username: string, pass: string) => Promise<boolean>;
   logout: () => void;
+  hasRole: (role: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -59,10 +61,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUser(null);
   };
 
+  const hasRole = (role: string): boolean => {
+    return user?.role === role;
+  };
+
   if (loading) return null;
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, login, logout, hasRole }}>
       {children}
     </AuthContext.Provider>
   );

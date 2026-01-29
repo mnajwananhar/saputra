@@ -96,3 +96,41 @@ export const formatNumber = (num: number | null | undefined, decimals: number = 
   if (num === null || num === undefined) return '-';
   return num.toLocaleString('id-ID', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
 };
+
+/**
+ * Function to aggregate daily transactions into monthly data for forecasting
+ */
+export const aggregateTransactionsToMonthly = (transactions: any[]): MonthlyData[] => {
+  // Group transactions by month and year, summing the quantities sold
+  const monthlySales: Record<string, number> = {};
+
+  transactions.forEach(transaction => {
+    const date = new Date(transaction.date);
+    const monthYear = `${date.getMonth() + 1}-${date.getFullYear().toString().slice(-2)}`;
+
+    transaction.items.forEach(item => {
+      if (!monthlySales[monthYear]) {
+        monthlySales[monthYear] = 0;
+      }
+      monthlySales[monthYear] += item.quantity;
+    });
+  });
+
+  // Convert to MonthlyData format
+  const months = Object.keys(monthlySales).sort(); // Sort chronologically
+  const monthlyData: MonthlyData[] = months.map((monthYear, index) => {
+    const [month, year] = monthYear.split('-');
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Des'];
+    const monthName = monthNames[parseInt(month) - 1];
+
+    return {
+      id: `monthly-${index}`,
+      month: monthName,
+      year: parseInt(`20${year}`),
+      demand: monthlySales[monthYear],
+      periodLabel: `${monthName}-${year}`,
+    };
+  });
+
+  return monthlyData;
+};

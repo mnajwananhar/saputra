@@ -6,100 +6,88 @@ const prisma = new PrismaClient();
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Des'];
 const years = [2024, 2025];
 
-/**
- * DATA DIAMBIL DARI HALAMAN 37 PDF (DATA PERMINTAAN)
- */
-const DATA_INDOMIE = [
-  66, 70, 65, 72, 60, 68, 64, 70, 62, 71, 68, 74, // 2024
-  68, 72, 64, 69, 62, 67, 66, 70, 63, 71, 69, 74  // 2025
-];
-
-const DATA_KAPAL_API = [
-  130, 118, 115, 95, 115, 102, 105, 110, 94, 118, 125, 120, // 2024
-  120, 118, 115, 118, 116, 118, 119, 120, 118, 120, 125, 118  // 2025
-];
-
-const DATA_SAMPOERNA = [
-  57, 52, 50, 55, 48, 54, 50, 56, 50, 48, 56, 58, // 2024
-  52, 55, 50, 52, 48, 53, 50, 56, 50, 49, 56, 58  // 2025
-];
+const getRandomDemand = (min, max) => Math.floor(Math.random() * (max - min + 1) + min);
 
 async function main() {
-  console.log('🚀 Memulai Seeding Database Saputra Jaya...\n');
-  
-  // 1. Hapus data lama
-  await prisma.historicalData.deleteMany({});
-  await prisma.product.deleteMany({});
-  await prisma.user.deleteMany({});
-  console.log('✓ Data lama dihapus');
-  
-  // 2. Buat Admin dengan password ter-hash
+  console.log('--- Memulai Seeding Data Saputra Jaya ---');
+
+  // 1. Buat User Admin Default
   const hashedPassword = await bcrypt.hash('admin123', 10);
-  const adminUser = await prisma.user.create({
-    data: {
+  await prisma.user.upsert({
+    where: { username: 'admin' },
+    update: {},
+    create: {
       username: 'admin',
       password: hashedPassword,
-      name: 'Administrator Saputra'
+      name: 'Administrator Saputra',
+      role: 'owner'
     }
   });
-  console.log('✓ User admin dibuat (admin / admin123)');
 
-  // 3. Data Produk dari PDF
-  const productsToSeed = [
-    { 
-      name: 'Indomie Goreng', 
-      unit: 'Dus', 
-      current: 45, 
-      safety: 8, 
-      bestN: 4, 
-      history: DATA_INDOMIE 
-    },
-    { 
-      name: 'Kapal Api', 
-      unit: 'Dus', 
-      current: 12, 
-      safety: 8, 
-      bestN: 4, 
-      history: DATA_KAPAL_API 
-    },
-    { 
-      name: 'Sampoerna', 
-      unit: 'Bal', 
-      current: 5, 
-      safety: 8, 
-      bestN: 8, 
-      history: DATA_SAMPOERNA 
+  // Create some suppliers
+  const supplier1 = await prisma.supplier.create({
+    data: {
+      name: 'PT. Distributor Jaya Abadi',
+      contact: 'Bpk. Joko',
+      phone: '021-1234-5678',
+      email: 'info@distributorjaya.com',
+      address: 'Jl. Raya Bogor No. 123, Jakarta Timur'
     }
+  });
+
+  const supplier2 = await prisma.supplier.create({
+    data: {
+      name: 'CV. Sumber Makmur',
+      contact: 'Ibu Siti',
+      phone: '021-8765-4321',
+      email: 'contact@sumbermakmur.com',
+      address: 'Jl. Thamrin Raya No. 45, Jakarta Pusat'
+    }
+  });
+
+  const productList = [
+    { name: 'Minyak Bimoli 2L', unit: 'Pcs', baseDemand: 60, current: 45, safety: 15, price: 28000, cost: 25000 },
+    { name: 'Beras Rojolele 5kg', unit: 'Karung', baseDemand: 30, current: 10, safety: 12, price: 65000, cost: 60000 },
+    { name: 'Indomie Goreng', unit: 'Dus', baseDemand: 200, current: 250, safety: 50, price: 3600, cost: 3200 },
+    { name: 'Gula Gulaku 1kg', unit: 'Pcs', baseDemand: 80, current: 5, safety: 20, price: 14000, cost: 12000 },
+    { name: 'Terigu Segitiga Biru 1kg', unit: 'Pcs', baseDemand: 45, current: 50, safety: 10, price: 12000, cost: 10000 },
+    { name: 'Kopi Kapal Api 165gr', unit: 'Pouch', baseDemand: 25, current: 30, safety: 8, price: 7500, cost: 6500 },
+    { name: 'Susu Frisian Flag 370g', unit: 'Kaleng', baseDemand: 40, current: 15, safety: 12, price: 18000, cost: 16000 },
+    { name: 'Rinso Bubuk 800gr', unit: 'Pcs', baseDemand: 35, current: 40, safety: 10, price: 15000, cost: 13000 }
   ];
 
-  for (const p of productsToSeed) {
-    console.log(`  → Menambahkan produk: ${p.name}`);
-    
+  for (const p of productList) {
+    console.log(`Menambahkan produk: ${p.name}`);
+
     const createdProduct = await prisma.product.create({
       data: {
         name: p.name,
         unit: p.unit,
+        price: p.price,
+        cost: p.cost,
         currentStock: p.current,
         safetyStock: p.safety,
-        bestN: p.bestN,
-        userId: adminUser.id
+        bestN: [2, 4, 6, 8][Math.floor(Math.random() * 4)],
+        supplier: {
+          connect: p.name.includes('Beras') || p.name.includes('Terigu') ? { id: supplier2.id } : { id: supplier1.id }
+        }
       }
     });
 
     const historicalEntries = [];
-    let dataIdx = 0;
-
     for (const year of years) {
       for (const month of months) {
+        const seasonalBoost = month === 'Apr' || month === 'Des' ? 1.3 : 1.0;
+        const randomFluc = (Math.random() * 0.4) + 0.8;
+        const demand = Math.round(p.baseDemand * seasonalBoost * randomFluc);
+
         historicalEntries.push({
           productId: createdProduct.id,
           month,
           year,
-          day: 1,
-          demand: p.history[dataIdx],
+          demand,
           periodLabel: `${month}-${year.toString().slice(-2)}`
         });
-        dataIdx++;
       }
     }
 
@@ -108,12 +96,12 @@ async function main() {
     });
   }
 
-  console.log(`\n✅ Seeding selesai! ${productsToSeed.length} produk dengan 24 bulan data historis.`);
+  console.log('--- Seeding Selesai ---');
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Error saat seeding:', e);
+    console.error(e);
     process.exit(1);
   })
   .finally(async () => {

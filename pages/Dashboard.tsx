@@ -1,29 +1,41 @@
 
 import React, { useMemo } from 'react';
 import { useProducts } from '../contexts/ProductContext';
-import { calculateSMA, calculateSafetyStock } from '../utils';
+import { useTransactions } from '../contexts/TransactionContext';
+import { useSuppliers } from '../contexts/SupplierContext';
+import { calculateSMA, calculateSafetyStock, aggregateTransactionsToMonthly } from '../utils';
 import { Package, ShoppingCart, ShieldAlert } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Dashboard: React.FC = () => {
   const { products } = useProducts();
+  const { transactions } = useTransactions();
+  const { suppliers } = useSuppliers();
 
   const analysis = useMemo(() => {
     return products.map(product => {
-      // 1. Ambil ramalan berdasarkan N terbaik (bestN)
-      const { nextPeriodForecast, metrics } = calculateSMA(product.data, product.bestN);
-      
+      // Get transactions for this product
+      const productTransactions = transactions.filter(transaction =>
+        transaction.items.some(item => item.productId === product.id)
+      );
+
+      // Aggregate transactions to monthly data for forecasting
+      const monthlyData = aggregateTransactionsToMonthly(productTransactions);
+
+      // Use the aggregated monthly data for forecasting
+      const { nextPeriodForecast, metrics } = calculateSMA(monthlyData, product.bestN);
+
       // 2. Hitung Safety Stock dinamis
-      const demands = product.data.map(d => d.demand);
+      const demands = monthlyData.map(d => d.demand);
       const dynamicSafety = calculateSafetyStock(demands);
-      
+
       // 3. Rekomendasi Beli: (Ramalan + SS) - Stok Gudang Saat Ini
       const forecastRounded = Math.ceil(nextPeriodForecast);
       const orderQuantity = Math.max(0, (forecastRounded + dynamicSafety) - product.stock.currentStock);
 
       // 4. Tentukan label target ramalan secara dinamis
-      const lastData = product.data[product.data.length - 1];
-      
+      const lastData = monthlyData[monthlyData.length - 1];
+
       let targetLabel = 'Periode Berikutnya';
       if (lastData) {
         const monthsMap: Record<string, number> = { 'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'Mei': 4, 'Jun': 5, 'Jul': 6, 'Agt': 7, 'Sep': 8, 'Okt': 9, 'Nov': 10, 'Des': 11 };
@@ -32,8 +44,12 @@ const Dashboard: React.FC = () => {
         targetLabel = targetMonthDate.toLocaleString('id-ID', { month: 'long', year: 'numeric' });
       }
 
+      // Get supplier info
+      const supplier = suppliers.find(s => s.id === product.supplierId);
+
       return {
         ...product,
+        supplier,
         forecast: forecastRounded,
         calculatedSafety: dynamicSafety,
         mape: metrics.mape,
@@ -42,7 +58,7 @@ const Dashboard: React.FC = () => {
         status: product.stock.currentStock < dynamicSafety ? 'low' : 'ok'
       };
     });
-  }, [products]);
+  }, [products, transactions, suppliers]);
 
   // Global metrics
   const criticalCount = analysis.filter(p => p.status !== 'ok').length;
