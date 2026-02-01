@@ -8,17 +8,17 @@ import { MonthlyData, ForecastResult, ErrorMetrics } from './types';
  */
 export const calculateSafetyStock = (historicalDemands: number[]): number => {
   if (historicalDemands.length === 0) return 0;
-  
+
   const maxLT = 4;
   const avgLT = 2;
   const daysInMonth = 30;
-  
+
   const maxMonthlyDemand = Math.max(...historicalDemands);
   const avgMonthlyDemand = historicalDemands.reduce((a, b) => a + b, 0) / historicalDemands.length;
-  
+
   const maxDailyDemand = maxMonthlyDemand / daysInMonth;
   const avgDailyDemand = avgMonthlyDemand / daysInMonth;
-  
+
   const safetyStock = (maxLT * maxDailyDemand) - (avgLT * avgDailyDemand);
   return Math.ceil(safetyStock);
 };
@@ -27,10 +27,10 @@ export const calculateSafetyStock = (historicalDemands: number[]): number => {
  * Kalkulasi Single Moving Average (SMA)
  * Menghasilkan peramalan untuk periode berikutnya berdasarkan N bulan terakhir.
  */
-export const calculateSMA = (data: MonthlyData[], n: number): { 
-  results: ForecastResult[], 
-  metrics: ErrorMetrics, 
-  nextPeriodForecast: number 
+export const calculateSMA = (data: MonthlyData[], n: number): {
+  results: ForecastResult[],
+  metrics: ErrorMetrics,
+  nextPeriodForecast: number
 } => {
   const results: ForecastResult[] = [];
   let sumAbsError = 0;
@@ -51,12 +51,12 @@ export const calculateSMA = (data: MonthlyData[], n: number): {
         sum += data[i - j].demand;
       }
       forecast = sum / n;
-      
+
       error = current.demand - forecast;
       const absError = Math.abs(error);
       sumAbsError += absError;
       sumSquaredError += Math.pow(error, 2);
-      
+
       if (current.demand > 0) {
         ape = (absError / current.demand) * 100;
         sumApe += ape;
@@ -97,6 +97,15 @@ export const formatNumber = (num: number | null | undefined, decimals: number = 
   return num.toLocaleString('id-ID', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
 };
 
+export interface DailyTransaction {
+  date: string;
+  quantity: number;
+}
+
+export interface MonthlyDataWithDetails extends MonthlyData {
+  dailyTransactions: DailyTransaction[];
+}
+
 /**
  * Function to aggregate daily transactions into monthly data for forecasting
  */
@@ -129,6 +138,63 @@ export const aggregateTransactionsToMonthly = (transactions: any[]): MonthlyData
       year: parseInt(`20${year}`),
       demand: monthlySales[monthYear],
       periodLabel: `${monthName}-${year}`,
+    };
+  });
+
+  return monthlyData;
+};
+
+/**
+ * Function to aggregate daily transactions into monthly data WITH daily transaction details
+ */
+export const aggregateTransactionsToMonthlyWithDetails = (transactions: any[]): MonthlyDataWithDetails[] => {
+  // Group transactions by month and year
+  const monthlySales: Record<string, { total: number; dailyDetails: DailyTransaction[] }> = {};
+
+  transactions.forEach(transaction => {
+    const date = new Date(transaction.date);
+    const monthYear = `${date.getMonth() + 1}-${date.getFullYear().toString().slice(-2)}`;
+    const dateStr = date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+
+    if (!monthlySales[monthYear]) {
+      monthlySales[monthYear] = { total: 0, dailyDetails: [] };
+    }
+
+    transaction.items.forEach(item => {
+      monthlySales[monthYear].total += item.quantity;
+
+      // Check if we already have an entry for this date
+      const existingDaily = monthlySales[monthYear].dailyDetails.find(d => d.date === dateStr);
+      if (existingDaily) {
+        existingDaily.quantity += item.quantity;
+      } else {
+        monthlySales[monthYear].dailyDetails.push({
+          date: dateStr,
+          quantity: item.quantity
+        });
+      }
+    });
+  });
+
+  // Convert to MonthlyDataWithDetails format
+  const months = Object.keys(monthlySales).sort(); // Sort chronologically
+  const monthlyData: MonthlyDataWithDetails[] = months.map((monthYear, index) => {
+    const [month, year] = monthYear.split('-');
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Des'];
+    const monthName = monthNames[parseInt(month) - 1];
+
+    // Sort daily transactions by date
+    const sortedDailyTransactions = monthlySales[monthYear].dailyDetails.sort((a, b) => {
+      return new Date(a.date).getTime() - new Date(b.date).getTime();
+    });
+
+    return {
+      id: `monthly-${index}`,
+      month: monthName,
+      year: parseInt(`20${year}`),
+      demand: monthlySales[monthYear].total,
+      periodLabel: `${monthName}-${year}`,
+      dailyTransactions: sortedDailyTransactions,
     };
   });
 
