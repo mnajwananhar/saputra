@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>F05 - Manajemen Karyawan (Admin)</title>
+<style>
+body {
+  margin: 0;
+  padding: 30px;
+  font-family: Inter, sans-serif;
+  background: #e0e0e0;
+}
+.wrapper {
+  max-width: 900px;
+  margin: 0 auto;
+  background: #fff;
+  border: 1px solid #000;
+  display: flex;
+}
+.page-code {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #333;
+  letter-spacing: 2px;
+}
+.main-panel {
+  flex: 1;
+  display: flex;
+}
+.sidebar {
+  width: 130px;
+  background: #fafafa;
+  border-right: 1px solid #ccc;
+  padding: 20px 10px;
+}
+.logo {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 5px;
+}
+.accent {
+  height: 5px;
+  width: 30px;
+  background: #333;
+  margin-bottom: 20px;
+}
+.menu-item {
+  border: 1px solid #ccc;
+  padding: 10px 8px;
+  margin-bottom: 8px;
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-align: center;
+  background: #fff;
+}
+.menu-item.active {
+  background: #333;
+  color: #fff;
+  border-color: #000;
+}
+.user-section {
+  margin-top: 30px;
+  padding-top: 15px;
+  border-top: 1px solid #ccc;
+}
+.user-box {
+  border: 1px solid #ccc;
+  padding: 10px;
+  background: #fff;
+  text-align: center;
+  font-size: 8px;
+}
+.logout-btn {
+  border: 1px solid #ccc;
+  padding: 8px;
+  margin-top: 8px;
+  background: #fff;
+  font-size: 7px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.content {
+  flex: 1;
+  padding: 30px;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 20px;
+}
+.page-title {
+  font-size: 20px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.subtitle {
+  font-size: 8px;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-top: 5px;
+}
+.add-btn {
+  border: 1px solid #333;
+  padding: 10px 15px;
+  background: #333;
+  color: #fff;
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.form-section {
+  border: 1px solid #ccc;
+  padding: 20px;
+  margin-bottom: 20px;
+  background: #fff;
+}
+.form-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 15px;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+.form-label {
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #888;
+  margin-bottom: 5px;
+}
+.form-input {
+  border: 1px solid #ccc;
+  padding: 8px;
+  background: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.form-actions {
+  display: flex;
+  gap: 8px;
+}
+.btn {
+  flex: 1;
+  border: 1px solid #ccc;
+  padding: 8px;
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-align: center;
+}
+.btn-primary {
+  background: #333;
+  color: #fff;
+  border-color: #333;
+}
+.btn-secondary {
+  background: #f5f5f5;
+  color: #666;
+}
+.table-container {
+  border: 1px solid #ccc;
+  background: #fff;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+thead {
+  background: #fafafa;
+}
+th {
+  padding: 12px 10px;
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-align: left;
+  border-bottom: 1px solid #ccc;
+}
+th.center {
+  text-align: center;
+}
+td {
+  padding: 12px 10px;
+  font-size: 9px;
+  border-bottom: 1px solid #eee;
+}
+td.username {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.role-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  font-size: 7px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  border: 1px solid #ccc;
+  background: #f5f5f5;
+}
+.role-badge.owner {
+  background: #fafafa;
+  border-color: #888;
+  color: #666;
+}
+.action-buttons {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+}
+.action-btn {
+  border: 1px solid #ccc;
+  padding: 6px 8px;
+  background: #fff;
+  font-size: 10px;
+}
+.action-btn.edit {
+  border-color: #ccc;
+}
+.action-btn.delete {
+  background: #f5f5f5;
+  border-color: #888;
+}
+.action-btn.save {
+  background: #f5f5f5;
+  border-color: #333;
+}
+.nav-panel {
+  width: 150px;
+  background: #fafafa;
+  border-left: 1px solid #000;
+  padding: 20px 15px;
+}
+.nav-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 15px;
+}
+.nav-list {
+  list-style: disc;
+  padding-left: 20px;
+  font-size: 9px;
+  line-height: 1.8;
+}
+.color-info {
+  margin-top: 30px;
+  padding: 15px;
+  border: 1px solid #ccc;
+  background: #fff;
+}
+.color-info-title {
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+}
+.color-list {
+  font-size: 7px;
+  line-height: 1.6;
+}
+</style>
+</head>
+<body>
+
+<div class="page-code">F05</div>
+
+<div class="wrapper">
+  <!-- Main Panel -->
+  <div class="main-panel">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="logo">SAPUTRA<br>JAYA</div>
+      <div class="accent"></div>
+      
+      <div class="menu-item">DASHBOARD</div>
+      <div class="menu-item">PENENTUAN JUMLAH PEMBELIAN BARANG</div>
+      <div class="menu-item">DATA HISTORIS</div>
+      <div class="menu-item active">MANAJEMEN KARYAWAN</div>
+      
+      <div class="user-section">
+        <div class="user-box">
+          <div style="font-weight: 700; margin-bottom: 3px;">U</div>
+          <div style="font-size: 7px; color: #888; text-transform: uppercase; letter-spacing: 2px;">PEMILIK</div>
+        </div>
+        <div class="logout-btn">LOGOUT</div>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <div class="header">
+        <div>
+          <div class="page-title">KARYAWAN</div>
+          <div class="subtitle">KELOLA AKUN KARYAWAN</div>
+        </div>
+        <button class="add-btn">➕ TAMBAH KARYAWAN</button>
+      </div>
+
+      <!-- Add Form (shown when clicked) -->
+      <div class="form-section">
+        <div class="form-title">TAMBAH KARYAWAN BARU</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">USERNAME</label>
+            <input type="text" class="form-input" placeholder="username">
+          </div>
+          <div class="form-group">
+            <label class="form-label">NAMA LENGKAP</label>
+            <input type="text" class="form-input" placeholder="Nama Lengkap">
+          </div>
+          <div class="form-group">
+            <label class="form-label">PASSWORD</label>
+            <input type="password" class="form-input" placeholder="••••••">
+          </div>
+          <div class="form-group form-actions">
+            <button class="btn btn-primary">SIMPAN</button>
+            <button class="btn btn-secondary">BATAL</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Employee Table -->
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>USERNAME</th>
+              <th>NAMA</th>
+              <th>ROLE</th>
+              <th class="center">AKSI</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="username">admin</td>
+              <td>Administrator</td>
+              <td><span class="role-badge owner">PEMILIK</span></td>
+              <td>
+                <div class="action-buttons">
+                  <button class="action-btn edit">✏️</button>
+                  <button class="action-btn delete" disabled style="opacity: 0.3;">🗑️</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="username">kasir01</td>
+              <td>Budi Santoso</td>
+              <td><span class="role-badge">KARYAWAN</span></td>
+              <td>
+                <div class="action-buttons">
+                  <button class="action-btn edit">✏️</button>
+                  <button class="action-btn delete">🗑️</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="username">kasir02</td>
+              <td>Siti Rahayu</td>
+              <td><span class="role-badge">KARYAWAN</span></td>
+              <td>
+                <div class="action-buttons">
+                  <button class="action-btn edit">✏️</button>
+                  <button class="action-btn delete">🗑️</button>
+                </div>
+              </td>
+            </tr>
+            <tr style="background: #fafafa;">
+              <td class="username">kasir03</td>
+              <td>
+                <input type="text" class="form-input" value="AHMAD FAUZI" style="width: 150px; padding: 5px;">
+              </td>
+              <td><span class="role-badge">KARYAWAN</span></td>
+              <td>
+                <div class="action-buttons">
+                  <button class="action-btn save">💾</button>
+                  <button class="action-btn">✖️</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="username">kasir04</td>
+              <td>Dewi Lestari</td>
+              <td><span class="role-badge">KARYAWAN</span></td>
+              <td>
+                <div class="action-buttons">
+                  <button class="action-btn edit">✏️</button>
+                  <button class="action-btn delete">🗑️</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Nav Panel -->
+  <div class="nav-panel">
+    <div class="nav-title">NAVIGASI</div>
+    <ul class="nav-list">
+      <li>Klik "Tambah Karyawan" untuk form</li>
+      <li>Input username, nama, password</li>
+      <li>Klik "Simpan" untuk save</li>
+      <li>Edit data dengan tombol ✏️</li>
+      <li>Hapus karyawan dengan 🗑️</li>
+      <li>Owner tidak bisa dihapus</li>
+    </ul>
+
+    <div class="color-info">
+      <div class="color-info-title">COLORS</div>
+      <div class="color-list">
+        <strong>Background:</strong><br>
+        #fff, #fafafa, #f5f5f5, #333<br><br>
+        <strong>Font:</strong><br>
+        #333, #666, #888, #fff<br><br>
+        <strong>Font Family:</strong><br>
+        Inter, sans-serif
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

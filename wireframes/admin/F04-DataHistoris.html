@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>F04 - Data Historis (Admin)</title>
+<style>
+body {
+  margin: 0;
+  padding: 30px;
+  font-family: Inter, sans-serif;
+  background: #e0e0e0;
+}
+.wrapper {
+  max-width: 900px;
+  margin: 0 auto;
+  background: #fff;
+  border: 1px solid #000;
+  display: flex;
+}
+.page-code {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #333;
+  letter-spacing: 2px;
+}
+.main-panel {
+  flex: 1;
+  display: flex;
+}
+.sidebar {
+  width: 130px;
+  background: #fafafa;
+  border-right: 1px solid #ccc;
+  padding: 20px 10px;
+}
+.logo {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 5px;
+}
+.accent {
+  height: 5px;
+  width: 30px;
+  background: #333;
+  margin-bottom: 20px;
+}
+.menu-item {
+  border: 1px solid #ccc;
+  padding: 10px 8px;
+  margin-bottom: 8px;
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-align: center;
+  background: #fff;
+}
+.menu-item.active {
+  background: #333;
+  color: #fff;
+  border-color: #000;
+}
+.user-section {
+  margin-top: 30px;
+  padding-top: 15px;
+  border-top: 1px solid #ccc;
+}
+.user-box {
+  border: 1px solid #ccc;
+  padding: 10px;
+  background: #fff;
+  text-align: center;
+  font-size: 8px;
+}
+.logout-btn {
+  border: 1px solid #ccc;
+  padding: 8px;
+  margin-top: 8px;
+  background: #fff;
+  font-size: 7px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.content {
+  flex: 1;
+  padding: 30px;
+}
+.header {
+  margin-bottom: 20px;
+}
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 10px;
+}
+.page-title {
+  font-size: 20px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.subtitle {
+  font-size: 8px;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-top: 5px;
+}
+.header-controls {
+  display: flex;
+  gap: 10px;
+}
+.search-box {
+  border: 1px solid #ccc;
+  padding: 10px;
+  width: 180px;
+  background: #fff;
+  font-size: 9px;
+  color: #888;
+}
+.year-select {
+  border: 1px solid #ccc;
+  padding: 10px 15px;
+  background: #fff;
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.export-btn {
+  border: 1px solid #ccc;
+  padding: 10px 15px;
+  background: #fff;
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.table-container {
+  border: 1px solid #ccc;
+  background: #fff;
+  overflow-x: auto;
+}
+.table-scroll {
+  max-height: 450px;
+  overflow: auto;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+thead {
+  background: #fafafa;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+th {
+  padding: 10px 8px;
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-align: center;
+  border-bottom: 1px solid #ccc;
+  border-right: 1px solid #eee;
+  white-space: nowrap;
+}
+th.sticky-col {
+  position: sticky;
+  left: 0;
+  background: #f5f5f5;
+  border-right: 1px solid #ccc;
+  text-align: left;
+  z-index: 20;
+}
+td {
+  padding: 10px 8px;
+  font-size: 10px;
+  border-bottom: 1px solid #eee;
+  border-right: 1px solid #eee;
+  text-align: center;
+  font-weight: 700;
+}
+td.sticky-col {
+  position: sticky;
+  left: 0;
+  background: #fff;
+  border-right: 1px solid #ccc;
+  text-align: left;
+  font-size: 9px;
+}
+td.clickable {
+  cursor: pointer;
+}
+td.clickable:hover {
+  background: #fafafa;
+}
+.product-name {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.footer {
+  padding: 15px;
+  border-top: 1px solid #ccc;
+  background: #fafafa;
+  text-align: center;
+}
+.footer-text {
+  font-size: 8px;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.detail-popup {
+  position: absolute;
+  background: #fff;
+  border: 1px solid #000;
+  padding: 12px;
+  min-width: 150px;
+  box-shadow: 2px 2px 0px #ccc;
+  z-index: 100;
+}
+.popup-header {
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #ccc;
+}
+.popup-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  margin-bottom: 5px;
+}
+.popup-date {
+  color: #888;
+}
+.popup-value {
+  font-weight: 700;
+}
+.popup-total {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #ccc;
+  display: flex;
+  justify-content: space-between;
+  font-size: 8px;
+}
+.popup-total-label {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #888;
+}
+.popup-total-value {
+  font-weight: 700;
+  font-size: 10px;
+}
+.nav-panel {
+  width: 150px;
+  background: #fafafa;
+  border-left: 1px solid #000;
+  padding: 20px 15px;
+}
+.nav-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 15px;
+}
+.nav-list {
+  list-style: disc;
+  padding-left: 20px;
+  font-size: 9px;
+  line-height: 1.8;
+}
+.color-info {
+  margin-top: 30px;
+  padding: 15px;
+  border: 1px solid #ccc;
+  background: #fff;
+}
+.color-info-title {
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+}
+.color-list {
+  font-size: 7px;
+  line-height: 1.6;
+}
+</style>
+</head>
+<body>
+
+<div class="page-code">F04</div>
+
+<div class="wrapper">
+  <!-- Main Panel -->
+  <div class="main-panel">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="logo">SAPUTRA<br>JAYA</div>
+      <div class="accent"></div>
+      
+      <div class="menu-item">DASHBOARD</div>
+      <div class="menu-item">PENENTUAN JUMLAH PEMBELIAN BARANG</div>
+      <div class="menu-item active">DATA HISTORIS</div>
+      <div class="menu-item">MANAJEMEN KARYAWAN</div>
+      
+      <div class="user-section">
+        <div class="user-box">
+          <div style="font-weight: 700; margin-bottom: 3px;">U</div>
+          <div style="font-size: 7px; color: #888; text-transform: uppercase; letter-spacing: 2px;">PEMILIK</div>
+        </div>
+        <div class="logout-btn">LOGOUT</div>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <div class="header">
+        <div class="header-row">
+          <div>
+            <div class="page-title">DATA HISTORIS</div>
+            <div class="subtitle">HISTORICAL SALES RECORD • KLIK SEL UNTUK DETAIL HARIAN</div>
+          </div>
+          <div class="search-box">🔍 Cari produk...</div>
+        </div>
+        <div class="header-controls">
+          <select class="year-select">
+            <option>1 TAHUN TERAKHIR</option>
+            <option>2024</option>
+            <option>2025</option>
+            <option>2026</option>
+          </select>
+          <button class="export-btn">📥 EXPORT CSV</button>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="table-container">
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th class="sticky-col">PRODUK</th>
+                <th>JAN-24</th>
+                <th>FEB-24</th>
+                <th>MAR-24</th>
+                <th>APR-24</th>
+                <th>MEI-24</th>
+                <th>JUN-24</th>
+                <th>JUL-24</th>
+                <th>AGT-24</th>
+                <th>SEP-24</th>
+                <th>OKT-24</th>
+                <th>NOV-24</th>
+                <th>DES-24</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="sticky-col">
+                  <div class="product-name">📦 BERAS PREMIUM (KG)</div>
+                </td>
+                <td class="clickable">85</td>
+                <td class="clickable">92</td>
+                <td class="clickable">88</td>
+                <td class="clickable">95</td>
+                <td class="clickable">102</td>
+                <td class="clickable">98</td>
+                <td class="clickable">105</td>
+                <td class="clickable">110</td>
+                <td class="clickable">108</td>
+                <td class="clickable">115</td>
+                <td class="clickable">120</td>
+                <td class="clickable">125</td>
+              </tr>
+              <tr>
+                <td class="sticky-col">
+                  <div class="product-name">📦 MINYAK GORENG (LITER)</div>
+                </td>
+                <td class="clickable">65</td>
+                <td class="clickable">70</td>
+                <td class="clickable">68</td>
+                <td class="clickable">75</td>
+                <td class="clickable">72</td>
+                <td class="clickable">78</td>
+                <td class="clickable">80</td>
+                <td class="clickable">85</td>
+                <td class="clickable">82</td>
+                <td class="clickable">88</td>
+                <td class="clickable">90</td>
+                <td class="clickable">95</td>
+              </tr>
+              <tr>
+                <td class="sticky-col">
+                  <div class="product-name">📦 GULA PASIR (KG)</div>
+                </td>
+                <td class="clickable">55</td>
+                <td class="clickable">60</td>
+                <td class="clickable">58</td>
+                <td class="clickable">62</td>
+                <td class="clickable">65</td>
+                <td class="clickable">68</td>
+                <td class="clickable">70</td>
+                <td class="clickable">75</td>
+                <td class="clickable">72</td>
+                <td class="clickable">78</td>
+                <td class="clickable">80</td>
+                <td class="clickable">85</td>
+              </tr>
+              <tr>
+                <td class="sticky-col">
+                  <div class="product-name">📦 TELUR AYAM (KG)</div>
+                </td>
+                <td class="clickable">45</td>
+                <td class="clickable">50</td>
+                <td class="clickable">48</td>
+                <td class="clickable">52</td>
+                <td class="clickable">55</td>
+                <td class="clickable">58</td>
+                <td class="clickable">60</td>
+                <td class="clickable">62</td>
+                <td class="clickable">65</td>
+                <td class="clickable">68</td>
+                <td class="clickable">70</td>
+                <td class="clickable">75</td>
+              </tr>
+              <tr>
+                <td class="sticky-col">
+                  <div class="product-name">📦 TEPUNG TERIGU (KG)</div>
+                </td>
+                <td class="clickable">38</td>
+                <td class="clickable">42</td>
+                <td class="clickable">40</td>
+                <td class="clickable">45</td>
+                <td class="clickable">48</td>
+                <td class="clickable">50</td>
+                <td class="clickable">52</td>
+                <td class="clickable">55</td>
+                <td class="clickable">58</td>
+                <td class="clickable">60</td>
+                <td class="clickable">62</td>
+                <td class="clickable">65</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="footer">
+          <div class="footer-text">
+            DATA DIAMBIL DARI TRANSAKSI PENJUALAN HARIAN • 78 PRODUK • 12 PERIODE • KLIK ANGKA UNTUK DETAIL
+          </div>
+        </div>
+      </div>
+
+      <!-- Example Detail Popup (positioned absolutely, shown on click) -->
+      <div class="detail-popup" style="display: none; top: 200px; left: 400px;">
+        <div class="popup-header">📅 DETAIL PENJUALAN JAN-24</div>
+        <div class="popup-item">
+          <span class="popup-date">01 Jan</span>
+          <span class="popup-value">12 KG</span>
+        </div>
+        <div class="popup-item">
+          <span class="popup-date">05 Jan</span>
+          <span class="popup-value">15 KG</span>
+        </div>
+        <div class="popup-item">
+          <span class="popup-date">10 Jan</span>
+          <span class="popup-value">18 KG</span>
+        </div>
+        <div class="popup-item">
+          <span class="popup-date">15 Jan</span>
+          <span class="popup-value">20 KG</span>
+        </div>
+        <div class="popup-item">
+          <span class="popup-date">20 Jan</span>
+          <span class="popup-value">20 KG</span>
+        </div>
+        <div class="popup-total">
+          <span class="popup-total-label">TOTAL</span>
+          <span class="popup-total-value">85 KG</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Nav Panel -->
+  <div class="nav-panel">
+    <div class="nav-title">NAVIGASI</div>
+    <ul class="nav-list">
+      <li>Cari produk dengan search</li>
+      <li>Filter tahun data</li>
+      <li>Scroll horizontal untuk periode</li>
+      <li>Klik angka untuk detail harian</li>
+      <li>Export data ke CSV</li>
+    </ul>
+
+    <div class="color-info">
+      <div class="color-info-title">COLORS</div>
+      <div class="color-list">
+        <strong>Background:</strong><br>
+        #fff, #fafafa, #f5f5f5<br><br>
+        <strong>Font:</strong><br>
+        #333, #888<br><br>
+        <strong>Font Family:</strong><br>
+        Inter, sans-serif
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

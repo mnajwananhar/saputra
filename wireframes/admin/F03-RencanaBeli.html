@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>F03 - Rencana Beli (Admin)</title>
+<style>
+body {
+  margin: 0;
+  padding: 30px;
+  font-family: Inter, sans-serif;
+  background: #e0e0e0;
+}
+.wrapper {
+  max-width: 900px;
+  margin: 0 auto;
+  background: #fff;
+  border: 1px solid #000;
+  display: flex;
+}
+.page-code {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #333;
+  letter-spacing: 2px;
+}
+.main-panel {
+  flex: 1;
+  display: flex;
+}
+.sidebar {
+  width: 130px;
+  background: #fafafa;
+  border-right: 1px solid #ccc;
+  padding: 20px 10px;
+}
+.logo {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 5px;
+}
+.accent {
+  height: 5px;
+  width: 30px;
+  background: #333;
+  margin-bottom: 20px;
+}
+.menu-item {
+  border: 1px solid #ccc;
+  padding: 10px 8px;
+  margin-bottom: 8px;
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-align: center;
+  background: #fff;
+}
+.menu-item.active {
+  background: #333;
+  color: #fff;
+  border-color: #000;
+}
+.user-section {
+  margin-top: 30px;
+  padding-top: 15px;
+  border-top: 1px solid #ccc;
+}
+.user-box {
+  border: 1px solid #ccc;
+  padding: 10px;
+  background: #fff;
+  text-align: center;
+  font-size: 8px;
+}
+.logout-btn {
+  border: 1px solid #ccc;
+  padding: 8px;
+  margin-top: 8px;
+  background: #fff;
+  font-size: 7px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.content {
+  flex: 1;
+  padding: 30px;
+}
+.header {
+  margin-bottom: 20px;
+}
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 15px;
+}
+.page-title {
+  font-size: 20px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.subtitle {
+  font-size: 8px;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-top: 5px;
+}
+.search-box {
+  border: 1px solid #ccc;
+  padding: 10px;
+  width: 200px;
+  background: #fff;
+  font-size: 9px;
+  color: #888;
+}
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px;
+  border: 1px solid #ccc;
+  background: #fafafa;
+  margin-bottom: 20px;
+}
+.filter-label {
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.filter-control {
+  border: 1px solid #ccc;
+  padding: 8px 12px;
+  background: #fff;
+  font-size: 9px;
+  font-weight: 700;
+}
+.nav-btn {
+  border: 1px solid #ccc;
+  padding: 8px;
+  background: #fff;
+  font-size: 10px;
+}
+.filter-note {
+  font-size: 7px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-left: auto;
+}
+.table-container {
+  border: 1px solid #ccc;
+  background: #fff;
+  margin-bottom: 15px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+thead {
+  background: #fafafa;
+}
+th {
+  padding: 12px 10px;
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-align: left;
+  border-bottom: 1px solid #ccc;
+}
+th.right {
+  text-align: right;
+}
+th.highlight {
+  background: #f5f5f5;
+}
+td {
+  padding: 12px 10px;
+  font-size: 9px;
+  border-bottom: 1px solid #eee;
+}
+td.right {
+  text-align: right;
+  font-weight: 700;
+}
+td.highlight {
+  background: #fafafa;
+  font-size: 12px;
+  font-weight: 700;
+}
+.product-name {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.supplier-name {
+  font-size: 7px;
+  color: #888;
+  margin-top: 2px;
+}
+.warning {
+  font-size: 7px;
+  color: #666;
+  margin-top: 2px;
+}
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  border-top: 1px solid #ccc;
+  background: #fafafa;
+}
+.pagination-info {
+  font-size: 8px;
+  font-weight: 700;
+}
+.pagination-select {
+  border: 1px solid #ccc;
+  padding: 5px 8px;
+  background: #fff;
+  font-size: 8px;
+  font-weight: 700;
+  margin-left: 10px;
+}
+.pagination-controls {
+  display: flex;
+  gap: 5px;
+}
+.page-btn {
+  border: 1px solid #ccc;
+  padding: 6px 10px;
+  background: #fff;
+  font-size: 8px;
+}
+.page-btn:disabled {
+  opacity: 0.4;
+}
+.page-num {
+  padding: 6px 10px;
+  font-size: 9px;
+  font-weight: 700;
+}
+.nav-panel {
+  width: 150px;
+  background: #fafafa;
+  border-left: 1px solid #000;
+  padding: 20px 15px;
+}
+.nav-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 15px;
+}
+.nav-list {
+  list-style: disc;
+  padding-left: 20px;
+  font-size: 9px;
+  line-height: 1.8;
+}
+.color-info {
+  margin-top: 30px;
+  padding: 15px;
+  border: 1px solid #ccc;
+  background: #fff;
+}
+.color-info-title {
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+}
+.color-list {
+  font-size: 7px;
+  line-height: 1.6;
+}
+</style>
+</head>
+<body>
+
+<div class="page-code">F03</div>
+
+<div class="wrapper">
+  <!-- Main Panel -->
+  <div class="main-panel">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="logo">SAPUTRA<br>JAYA</div>
+      <div class="accent"></div>
+      
+      <div class="menu-item">DASHBOARD</div>
+      <div class="menu-item active">PENENTUAN JUMLAH PEMBELIAN BARANG</div>
+      <div class="menu-item">DATA HISTORIS</div>
+      <div class="menu-item">MANAJEMEN KARYAWAN</div>
+      
+      <div class="user-section">
+        <div class="user-box">
+          <div style="font-weight: 700; margin-bottom: 3px;">U</div>
+          <div style="font-size: 7px; color: #888; text-transform: uppercase; letter-spacing: 2px;">PEMILIK</div>
+        </div>
+        <div class="logout-btn">LOGOUT</div>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <div class="header">
+        <div class="header-row">
+          <div>
+            <div class="page-title">RENCANA BELI</div>
+            <div class="subtitle">TARGET STOK: FEBRUARI 2026 • DATA: FEB-24 S/D JAN-26</div>
+          </div>
+          <div class="search-box">🔍 Cari produk atau supplier...</div>
+        </div>
+
+        <!-- Filter Periode -->
+        <div class="filter-row">
+          <div class="filter-label">📅 PERIODE TARGET:</div>
+          <div class="nav-btn">‹</div>
+          <div class="filter-control">FEBRUARI</div>
+          <div class="filter-control">2026</div>
+          <div class="nav-btn">›</div>
+          <div class="filter-note">MENGGUNAKAN 24 BULAN DATA KEBELAKANG</div>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>NAMA PRODUK</th>
+              <th class="right">SATUAN</th>
+              <th class="right">RAMALAN KEBUTUHAN</th>
+              <th class="right">SAFETY STOCK</th>
+              <th class="right">STOK GUDANG</th>
+              <th class="right highlight">REKOMENDASI ORDER</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <div class="product-name">BERAS PREMIUM</div>
+                <div class="supplier-name">Supplier: PT BERAS JAYA</div>
+              </td>
+              <td class="right">KG</td>
+              <td class="right">120</td>
+              <td class="right">+15</td>
+              <td class="right">80</td>
+              <td class="right highlight">55</td>
+            </tr>
+            <tr>
+              <td>
+                <div class="product-name">MINYAK GORENG</div>
+                <div class="supplier-name">Supplier: CV MINYAK MURNI</div>
+              </td>
+              <td class="right">LITER</td>
+              <td class="right">95</td>
+              <td class="right">+12</td>
+              <td class="right">60</td>
+              <td class="right highlight">47</td>
+            </tr>
+            <tr>
+              <td>
+                <div class="product-name">GULA PASIR</div>
+                <div class="supplier-name">Supplier: UD GULA MANIS</div>
+              </td>
+              <td class="right">KG</td>
+              <td class="right">85</td>
+              <td class="right">+10</td>
+              <td class="right">50</td>
+              <td class="right highlight">45</td>
+            </tr>
+            <tr>
+              <td>
+                <div class="product-name">KOPI BUBUK</div>
+                <div class="supplier-name">Supplier: PT KOPI NUSANTARA</div>
+                <div class="warning">⚠️ Data hanya 2 bulan</div>
+              </td>
+              <td class="right">GR</td>
+              <td class="right">45</td>
+              <td class="right">+8</td>
+              <td class="right">10</td>
+              <td class="right highlight">43</td>
+            </tr>
+            <tr>
+              <td>
+                <div class="product-name">TEPUNG TERIGU</div>
+                <div class="supplier-name">Supplier: CV TEPUNG SEJAHTERA</div>
+              </td>
+              <td class="right">KG</td>
+              <td class="right">70</td>
+              <td class="right">+10</td>
+              <td class="right">55</td>
+              <td class="right highlight">25</td>
+            </tr>
+            <tr>
+              <td>
+                <div class="product-name">SABUN CUCI</div>
+                <div class="supplier-name">Supplier: UD SABUN BERSIH</div>
+              </td>
+              <td class="right">PCS</td>
+              <td class="right">35</td>
+              <td class="right">+8</td>
+              <td class="right">45</td>
+              <td class="right highlight" style="color: #888;">0</td>
+            </tr>
+            <tr>
+              <td>
+                <div class="product-name">SUSU BUBUK</div>
+                <div class="supplier-name">Supplier: PT SUSU MURNI</div>
+              </td>
+              <td class="right">GR</td>
+              <td class="right">50</td>
+              <td class="right">+10</td>
+              <td class="right">65</td>
+              <td class="right highlight" style="color: #888;">0</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="pagination">
+          <div>
+            <span class="pagination-info">Menampilkan 1-7 dari 78 produk</span>
+            <select class="pagination-select">
+              <option>10 / halaman</option>
+              <option>20 / halaman</option>
+              <option>50 / halaman</option>
+              <option>100 / halaman</option>
+            </select>
+          </div>
+          <div class="pagination-controls">
+            <button class="page-btn" disabled>≪</button>
+            <button class="page-btn" disabled>‹</button>
+            <div class="page-num">1 / 8</div>
+            <button class="page-btn">›</button>
+            <button class="page-btn">≫</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Nav Panel -->
+  <div class="nav-panel">
+    <div class="nav-title">NAVIGASI</div>
+    <ul class="nav-list">
+      <li>Pilih periode target bulan</li>
+      <li>Cari produk dengan search</li>
+      <li>Lihat ramalan kebutuhan</li>
+      <li>Cek rekomendasi order</li>
+      <li>Navigasi pagination</li>
+      <li>Ubah items per page</li>
+    </ul>
+
+    <div class="color-info">
+      <div class="color-info-title">COLORS</div>
+      <div class="color-list">
+        <strong>Background:</strong><br>
+        #fff, #fafafa, #f5f5f5<br><br>
+        <strong>Font:</strong><br>
+        #333, #666, #888<br><br>
+        <strong>Font Family:</strong><br>
+        Inter, sans-serif
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>F02 - Dashboard (Admin)</title>
+<style>
+body {
+  margin: 0;
+  padding: 30px;
+  font-family: Inter, sans-serif;
+  background: #e0e0e0;
+}
+.wrapper {
+  max-width: 900px;
+  margin: 0 auto;
+  background: #fff;
+  border: 1px solid #000;
+  display: flex;
+}
+.page-code {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #333;
+  letter-spacing: 2px;
+}
+.main-panel {
+  flex: 1;
+  display: flex;
+}
+.sidebar {
+  width: 130px;
+  background: #fafafa;
+  border-right: 1px solid #ccc;
+  padding: 20px 10px;
+}
+.logo {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 5px;
+}
+.accent {
+  height: 5px;
+  width: 30px;
+  background: #333;
+  margin-bottom: 20px;
+}
+.menu-item {
+  border: 1px solid #ccc;
+  padding: 10px 8px;
+  margin-bottom: 8px;
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-align: center;
+  background: #fff;
+}
+.menu-item.active {
+  background: #333;
+  color: #fff;
+  border-color: #000;
+}
+.user-section {
+  margin-top: 30px;
+  padding-top: 15px;
+  border-top: 1px solid #ccc;
+}
+.user-box {
+  border: 1px solid #ccc;
+  padding: 10px;
+  background: #fff;
+  text-align: center;
+  font-size: 8px;
+}
+.user-name {
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+.user-role {
+  font-size: 7px;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.logout-btn {
+  border: 1px solid #ccc;
+  padding: 8px;
+  margin-top: 8px;
+  background: #fff;
+  font-size: 7px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.content {
+  flex: 1;
+  padding: 30px;
+}
+.header {
+  margin-bottom: 30px;
+}
+.page-title {
+  font-size: 20px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 5px;
+}
+.subtitle {
+  font-size: 8px;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin-bottom: 20px;
+}
+.stat-card {
+  border: 1px solid #ccc;
+  padding: 15px;
+  background: #fafafa;
+}
+.stat-label {
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #888;
+  margin-bottom: 10px;
+}
+.stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #333;
+}
+.stat-unit {
+  font-size: 7px;
+  color: #888;
+  margin-left: 5px;
+}
+.stat-card.dark {
+  background: #1a1a1a;
+  border-color: #000;
+}
+.stat-card.dark .stat-label {
+  color: #666;
+}
+.stat-card.dark .stat-value {
+  color: #fff;
+}
+.section {
+  border: 1px solid #ccc;
+  margin-bottom: 20px;
+}
+.section-header {
+  padding: 15px;
+  border-bottom: 1px solid #ccc;
+  background: #fafafa;
+}
+.section-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.section-subtitle {
+  font-size: 7px;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-top: 3px;
+}
+.section-body {
+  padding: 15px;
+}
+.product-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #ccc;
+  margin-bottom: 8px;
+  background: #fafafa;
+}
+.product-rank {
+  width: 30px;
+  height: 30px;
+  border: 1px solid #333;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+  margin-right: 10px;
+}
+.product-info {
+  flex: 1;
+}
+.product-name {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.product-unit {
+  font-size: 7px;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.product-stat {
+  text-align: right;
+}
+.product-value {
+  font-size: 14px;
+  font-weight: 700;
+}
+.product-label {
+  font-size: 7px;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.alert-section {
+  border-color: #888;
+}
+.alert-section .section-header {
+  background: #f5f5f5;
+}
+.alert-item {
+  background: #f5f5f5;
+  border-color: #888;
+}
+.nav-panel {
+  width: 150px;
+  background: #fafafa;
+  border-left: 1px solid #000;
+  padding: 20px 15px;
+}
+.nav-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 15px;
+}
+.nav-list {
+  list-style: disc;
+  padding-left: 20px;
+  font-size: 9px;
+  line-height: 1.8;
+}
+.color-info {
+  margin-top: 30px;
+  padding: 15px;
+  border: 1px solid #ccc;
+  background: #fff;
+}
+.color-info-title {
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+}
+.color-list {
+  font-size: 7px;
+  line-height: 1.6;
+}
+</style>
+</head>
+<body>
+
+<div class="page-code">F02</div>
+
+<div class="wrapper">
+  <!-- Main Panel -->
+  <div class="main-panel">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="logo">SAPUTRA<br>JAYA</div>
+      <div class="accent"></div>
+      
+      <div class="menu-item active">DASHBOARD</div>
+      <div class="menu-item">PENENTUAN JUMLAH PEMBELIAN BARANG</div>
+      <div class="menu-item">DATA HISTORIS</div>
+      <div class="menu-item">MANAJEMEN KARYAWAN</div>
+      
+      <div class="user-section">
+        <div class="user-box">
+          <div class="user-name">U</div>
+          <div class="user-role">PEMILIK</div>
+        </div>
+        <div class="logout-btn">LOGOUT</div>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <div class="header">
+        <div class="page-title">DASHBOARD</div>
+        <div class="subtitle">OVERVIEW & QUICK STATS - JANUARI 2026</div>
+      </div>
+
+      <!-- Stats Row 1 -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">TOTAL PRODUK</div>
+          <div class="stat-value">78<span class="stat-unit">SKU</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">TOTAL SUPPLIER</div>
+          <div class="stat-value">12<span class="stat-unit">VENDOR</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">STOK RENDAH</div>
+          <div class="stat-value">5<span class="stat-unit">PRODUK</span></div>
+        </div>
+      </div>
+
+      <!-- Stats Row 2 (Dark) -->
+      <div class="stats-grid">
+        <div class="stat-card dark">
+          <div class="stat-label">PENDAPATAN BULAN INI</div>
+          <div class="stat-value" style="font-size: 14px;">Rp 45.000.000</div>
+        </div>
+        <div class="stat-card dark">
+          <div class="stat-label">TRANSAKSI BULAN INI</div>
+          <div class="stat-value">1.234<span class="stat-unit">TRX</span></div>
+        </div>
+        <div class="stat-card dark">
+          <div class="stat-label">UNIT TERJUAL</div>
+          <div class="stat-value">5.678<span class="stat-unit">UNIT</span></div>
+        </div>
+      </div>
+
+      <!-- Top 5 Products -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">TOP 5 PRODUK BULAN INI</div>
+          <div class="section-subtitle">BERDASARKAN UNIT TERJUAL</div>
+        </div>
+        <div class="section-body">
+          <div class="product-item">
+            <div class="product-rank">1</div>
+            <div class="product-info">
+              <div class="product-name">BERAS PREMIUM</div>
+              <div class="product-unit">KG</div>
+            </div>
+            <div class="product-stat">
+              <div class="product-value">850</div>
+              <div class="product-label">UNIT</div>
+            </div>
+          </div>
+          <div class="product-item">
+            <div class="product-rank">2</div>
+            <div class="product-info">
+              <div class="product-name">MINYAK GORENG</div>
+              <div class="product-unit">LITER</div>
+            </div>
+            <div class="product-stat">
+              <div class="product-value">720</div>
+              <div class="product-label">UNIT</div>
+            </div>
+          </div>
+          <div class="product-item">
+            <div class="product-rank">3</div>
+            <div class="product-info">
+              <div class="product-name">GULA PASIR</div>
+              <div class="product-unit">KG</div>
+            </div>
+            <div class="product-stat">
+              <div class="product-value">650</div>
+              <div class="product-label">UNIT</div>
+            </div>
+          </div>
+          <div class="product-item">
+            <div class="product-rank">4</div>
+            <div class="product-info">
+              <div class="product-name">TELUR AYAM</div>
+              <div class="product-unit">KG</div>
+            </div>
+            <div class="product-stat">
+              <div class="product-value">580</div>
+              <div class="product-label">UNIT</div>
+            </div>
+          </div>
+          <div class="product-item">
+            <div class="product-rank">5</div>
+            <div class="product-info">
+              <div class="product-name">TEPUNG TERIGU</div>
+              <div class="product-unit">KG</div>
+            </div>
+            <div class="product-stat">
+              <div class="product-value">520</div>
+              <div class="product-label">UNIT</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Low Stock Alert -->
+      <div class="section alert-section">
+        <div class="section-header">
+          <div class="section-title">⚠ ALERT: STOK RENDAH</div>
+          <div class="section-subtitle">PRODUK YANG PERLU SEGERA DIORDER</div>
+        </div>
+        <div class="section-body">
+          <div class="product-item alert-item">
+            <div class="product-info">
+              <div class="product-name">KOPI BUBUK</div>
+              <div class="product-unit">GR</div>
+            </div>
+            <div class="product-stat">
+              <div class="product-value">3</div>
+              <div class="product-label">MIN: 8</div>
+            </div>
+          </div>
+          <div class="product-item alert-item">
+            <div class="product-info">
+              <div class="product-name">SABUN CUCI</div>
+              <div class="product-unit">PCS</div>
+            </div>
+            <div class="product-stat">
+              <div class="product-value">5</div>
+              <div class="product-label">MIN: 10</div>
+            </div>
+          </div>
+        </div>
+        <div style="padding: 15px; border-top: 1px solid #888; background: #f5f5f5; text-align: center;">
+          <div style="border: 1px solid #333; padding: 10px; background: #333; color: #fff; font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px;">
+            LIHAT REKOMENDASI PEMBELIAN
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Nav Panel -->
+  <div class="nav-panel">
+    <div class="nav-title">NAVIGASI</div>
+    <ul class="nav-list">
+      <li>Lihat statistik overview</li>
+      <li>Cek top produk terlaris</li>
+      <li>Monitor stok rendah</li>
+      <li>Navigasi ke halaman lain</li>
+    </ul>
+
+    <div class="color-info">
+      <div class="color-info-title">COLORS</div>
+      <div class="color-list">
+        <strong>Background:</strong><br>
+        #fff, #fafafa, #f5f5f5, #1a1a1a<br><br>
+        <strong>Font:</strong><br>
+        #333, #666, #888<br><br>
+        <strong>Font Family:</strong><br>
+        Inter, sans-serif
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
