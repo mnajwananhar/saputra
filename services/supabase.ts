@@ -229,7 +229,7 @@ export const productService = {
 // Supplier Service
 export const supplierService = {
   getAll: async (): Promise<Supplier[]> => {
-    const { data, error } = await supabase
+    const { data, error } = await client
       .from('Supplier')
       .select('*')
       .order('createdAt', { ascending: false });
@@ -240,7 +240,7 @@ export const supplierService = {
   },
 
   getById: async (id: string): Promise<Supplier | null> => {
-    const { data, error } = await supabase
+    const { data, error } = await client
       .from('Supplier')
       .select('*')
       .eq('id', id)
@@ -255,7 +255,7 @@ export const supplierService = {
   },
 
   create: async (supplier: Omit<Supplier, 'id' | 'createdAt' | 'updatedAt'>): Promise<Supplier> => {
-    const { data, error } = await supabase
+    const { data, error } = await client
       .from('Supplier')
       .insert([{
         name: supplier.name,
@@ -273,7 +273,7 @@ export const supplierService = {
   },
 
   update: async (id: string, updates: Partial<Omit<Supplier, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Supplier> => {
-    const { data, error } = await supabase
+    const { data, error } = await client
       .from('Supplier')
       .update(updates)
       .eq('id', id)
@@ -286,7 +286,7 @@ export const supplierService = {
   },
 
   delete: async (id: string): Promise<void> => {
-    const { error } = await supabase
+    const { error } = await client
       .from('Supplier')
       .delete()
       .eq('id', id);
@@ -298,64 +298,89 @@ export const supplierService = {
 // Transaction Service
 export const transactionService = {
   getAll: async (): Promise<Transaction[]> => {
-    const { data, error } = await supabase
-      .from('Transaction')
-      .select(`
-        id,
-        date,
-        totalAmount,
-        createdAt,
-        updatedAt,
-        items:TransactionItem (
-          id,
-          productId,
-          quantity,
-          price,
-          subtotal,
-          Product (
+    try {
+      // Query ALL data tanpa limit apapun
+      let allData: any[] = [];
+      let from = 0;
+      const pageSize = 1000;
+      let pageCount = 0;
+      
+      while (true) {
+        pageCount++;
+        const { data, error } = await client
+          .from('Transaction')
+          .select(`
             id,
-            name,
-            unit,
-            price,
-            cost
-          )
-        )
-      `)
-      .order('date', { ascending: false });
+            date,
+            totalAmount,
+            createdAt,
+            updatedAt,
+            items:TransactionItem (
+              id,
+              productId,
+              quantity,
+              price,
+              subtotal,
+              Product (
+                id,
+                name,
+                unit,
+                price,
+                cost
+              )
+            )
+          `)
+          .order('date', { ascending: false })
+          .range(from, from + pageSize - 1);
 
-    if (error) throw new Error(error.message);
+        if (error) throw new Error(error.message);
+        
+        if (!data || data.length === 0) break;
+        
+        allData = [...allData, ...data];
+        
+        if (data.length < pageSize) break;
+        
+        from += pageSize;
+      }
 
-    return data.map(item => ({
-      id: item.id,
-      date: item.date,
-      totalAmount: item.totalAmount,
-      items: item.items.map(i => ({
-        id: i.id,
-        transactionId: i.transactionId,
-        productId: i.productId,
-        product: i.Product ? {
-          id: i.Product.id,
-          name: i.Product.name,
-          unit: i.Product.unit,
-          price: i.Product.price,
-          cost: i.Product.cost,
-          stock: { currentStock: 0, safetyStock: 0 }, // Placeholder
-          bestN: 4, // Placeholder
-          data: [], // Placeholder
-          createdAt: '', // Placeholder
-          updatedAt: '', // Placeholder
-        } : undefined,
-        quantity: i.quantity,
-        price: i.price,
-        subtotal: i.subtotal
-      })),
-      createdAt: item.createdAt,
-      updatedAt: item.updatedAt
-    }));
+      const mapped = allData.map(item => ({
+        id: item.id,
+        date: item.date,
+        totalAmount: item.totalAmount,
+        items: item.items.map(i => ({
+          id: i.id,
+          transactionId: item.id,
+          productId: i.productId,
+          product: i.Product ? {
+            id: i.Product.id,
+            name: i.Product.name,
+            unit: i.Product.unit,
+            price: i.Product.price,
+            cost: i.Product.cost,
+            stock: { currentStock: 0, safetyStock: 0 },
+            bestN: 4,
+            data: [],
+            createdAt: '',
+            updatedAt: '',
+          } : undefined,
+          quantity: i.quantity,
+          price: i.price,
+          subtotal: i.subtotal
+        })),
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt
+      }));
+      
+      return mapped;
+    } catch (err) {
+      console.error('Error fetching transactions:', err);
+      throw err;
+    }
   },
 
   getById: async (id: string): Promise<Transaction | null> => {
-    const { data, error } = await supabase
+    const { data, error } = await client
       .from('Transaction')
       .select(`
         id,
@@ -422,7 +447,7 @@ export const transactionService = {
     const now = new Date().toISOString();
 
     // First, insert the transaction (without paymentMethod)
-    const { data: transactionData, error: transactionError } = await supabase
+    const { data: transactionData, error: transactionError } = await client
       .from('Transaction')
       .insert([{
         id,
@@ -446,7 +471,7 @@ export const transactionService = {
       subtotal: item.subtotal
     }));
 
-    const { error: itemsError } = await supabase
+    const { error: itemsError } = await client
       .from('TransactionItem')
       .insert(itemsToInsert);
 
@@ -457,7 +482,7 @@ export const transactionService = {
   },
 
   update: async (id: string, updates: Partial<Omit<Transaction, 'id' | 'date' | 'createdAt' | 'updatedAt'>>): Promise<Transaction> => {
-    const { data, error } = await supabase
+    const { data, error } = await client
       .from('Transaction')
       .update({
         totalAmount: updates.totalAmount,
@@ -480,7 +505,7 @@ export const transactionService = {
   },
 
   delete: async (id: string): Promise<void> => {
-    const { error } = await supabase
+    const { error } = await client
       .from('Transaction')
       .delete()
       .eq('id', id);

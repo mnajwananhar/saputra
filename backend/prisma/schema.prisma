@@ -9,14 +9,13 @@ datasource db {
 }
 
 model User {
-  id           String        @id @default(cuid())
-  username     String        @unique
-  password     String
-  name         String
-  role         String        @default("employee") // "owner" or "employee"
-  transactions Transaction[] // Transaksi yang dibuat user
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String
+  name      String
+  role      String   @default("employee") // "owner" or "employee"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Supplier {
@@ -43,6 +42,8 @@ model Product {
   supplier     Supplier?        @relation(fields: [supplierId], references: [id])
   supplierId   String?
   transactions TransactionItem[]
+  stockIns     StockIn[]
+  history      HistoricalData[]
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
 }
@@ -51,13 +52,10 @@ model Transaction {
   id            String           @id @default(cuid())
   date          DateTime         @default(now())
   totalAmount   Int
-  user          User?            @relation(fields: [userId], references: [id])
-  userId        String?          // Siapa yang membuat transaksi
+  note          String?
   items         TransactionItem[]
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
-
-  @@index([userId])
 }
 
 model TransactionItem {
@@ -72,4 +70,33 @@ model TransactionItem {
 
   @@index([transactionId])
   @@index([productId])
-} 
+}
+
+model StockIn {
+  id          String   @id @default(cuid())
+  date        DateTime @default(now())
+  product     Product  @relation(fields: [productId], references: [id])
+  productId   String
+  quantity    Int
+  cost        Int      // Harga beli saat barang masuk
+  note        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([productId])
+}
+
+model HistoricalData {
+  id          String   @id @default(cuid())
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId   String
+  month       String   // Jan, Feb, Mar, dll.
+  year        Int
+  demand      Int
+  periodLabel String   // Format: "Jan-24"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([productId, periodLabel])
+  @@index([productId])
+}

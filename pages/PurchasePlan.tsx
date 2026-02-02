@@ -3,16 +3,18 @@ import { useProducts } from '../contexts/ProductContext';
 import { useTransactions } from '../contexts/TransactionContext';
 import { useSuppliers } from '../contexts/SupplierContext';
 import { calculateSMA, calculateSafetyStock, aggregateTransactionsToMonthly } from '../utils';
-import { Search, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Calendar, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 
 const MONTHS = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Des'];
 
 const PurchasePlan: React.FC = () => {
   const { products } = useProducts();
-  const { transactions } = useTransactions();
+  const { transactions, loading: transactionsLoading } = useTransactions();
   const { suppliers } = useSuppliers();
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   // Default: bulan depan dari sekarang
   const now = new Date();
@@ -64,17 +66,18 @@ const PurchasePlan: React.FC = () => {
   };
 
   const planData = useMemo(() => {
-    // Filter transaksi untuk 24 bulan kebelakang dari target month
-    const targetDate = new Date(targetYear, targetMonth, 1);
     const startDate = new Date(targetYear, targetMonth - 24, 1);
-    const endDate = new Date(targetYear, targetMonth - 1, 28); // End of previous month
+    const endDate = new Date(targetYear, targetMonth, 0);
 
     return products.map(product => {
       // Filter transactions within the 24 month range
       const productTransactions = transactions.filter(transaction => {
+        if (!transaction.items.some(item => item.productId === product.id)) return false;
+        
         const transDate = new Date(transaction.date);
-        return transDate >= startDate && transDate <= endDate &&
-          transaction.items.some(item => item.productId === product.id);
+        const isInRange = transDate >= startDate && transDate <= endDate;
+        
+        return isInRange;
       });
 
       const monthlyData = aggregateTransactionsToMonthly(productTransactions);
@@ -100,7 +103,6 @@ const PurchasePlan: React.FC = () => {
     });
   }, [products, transactions, suppliers, targetMonth, targetYear]);
 
-  // Filter berdasarkan search query dan sort by orderQuantity (saran beli) descending
   const filteredPlanData = useMemo(() => {
     let data = planData;
 
@@ -113,32 +115,54 @@ const PurchasePlan: React.FC = () => {
       );
     }
 
-    // Sort by orderQuantity (saran beli) from highest to lowest
     return [...data].sort((a, b) => b.orderQuantity - a.orderQuantity);
   }, [planData, searchQuery]);
 
+  const totalPages = Math.ceil(filteredPlanData.length / itemsPerPage);
+  const paginatedData = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredPlanData.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredPlanData, currentPage, itemsPerPage]);
+
+  const handlePageChange = (page: number): void => {
+    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+  };
+
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex flex-col gap-6">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div>
-            <h1 className="text-3xl md:text-5xl font-heading font-extrabold text-slate-900 tracking-tighter leading-none uppercase">Rencana Beli</h1>
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] mt-3">
-              Target Stok: {targetPeriodLabel} • {dataRangeLabel}
-            </p>
-          </div>
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Cari produk atau supplier..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-11 pr-4 py-3 w-full md:w-72 rounded-2xl border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-            />
+      {/* Loading State */}
+      {transactionsLoading ? (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center space-y-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+            <div className="space-y-1">
+              <p className="text-lg font-semibold text-slate-900">Memuat Data Transaksi</p>
+              <p className="text-sm text-slate-500">Mohon tunggu sebentar...</p>
+            </div>
           </div>
         </div>
+      ) : (
+        <>
+          <div className="flex flex-col gap-6">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+              <div>
+                <h1 className="text-3xl md:text-5xl font-heading font-extrabold text-slate-900 tracking-tighter leading-none uppercase">Rencana Beli</h1>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] mt-3">
+                  Target Stok: {targetPeriodLabel} • {dataRangeLabel}
+                </p>
+              </div>
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Cari produk atau supplier..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-11 pr-4 py-3 w-full md:w-72 rounded-2xl border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                />
+              </div>
+            </div>
 
         {/* Filter Periode Target */}
         <div className="flex flex-wrap items-center gap-4 p-4 rounded-2xl bg-gradient-to-r from-indigo-50 to-violet-50 border border-indigo-100">
@@ -203,7 +227,7 @@ const PurchasePlan: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredPlanData.map((item) => (
+              {paginatedData.map((item) => (
                 <tr key={item.id} className="hover:bg-slate-50/50">
                   <td className="px-8 py-6">
                     <div className="font-bold text-slate-900 text-[11px] uppercase tracking-widest">{item.name}</div>
@@ -239,7 +263,70 @@ const PurchasePlan: React.FC = () => {
             </p>
           </div>
         )}
+
+        {filteredPlanData.length > 0 && (
+          <div className="px-8 py-6 border-t border-slate-200 flex items-center justify-between bg-slate-50/30">
+            <div className="flex items-center gap-4">
+              <span className="text-xs text-slate-600 font-semibold">
+                Menampilkan {((currentPage - 1) * itemsPerPage) + 1}-{Math.min(currentPage * itemsPerPage, filteredPlanData.length)} dari {filteredPlanData.length} produk
+              </span>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => {
+                  setItemsPerPage(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+                className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value={10}>10 / halaman</option>
+                <option value={20}>20 / halaman</option>
+                <option value={50}>50 / halaman</option>
+                <option value={100}>100 / halaman</option>
+              </select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handlePageChange(1)}
+                disabled={currentPage === 1}
+                className="p-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              >
+                <ChevronsLeft className="h-4 w-4 text-slate-600" />
+              </button>
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="p-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              >
+                <ChevronLeft className="h-4 w-4 text-slate-600" />
+              </button>
+              
+              <div className="flex items-center gap-1 px-3">
+                <span className="text-sm font-bold text-slate-900">{currentPage}</span>
+                <span className="text-sm text-slate-400">/</span>
+                <span className="text-sm text-slate-600">{totalPages}</span>
+              </div>
+
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="p-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              >
+                <ChevronRight className="h-4 w-4 text-slate-600" />
+              </button>
+              <button
+                onClick={() => handlePageChange(totalPages)}
+                disabled={currentPage === totalPages}
+                className="p-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              >
+                <ChevronsRight className="h-4 w-4 text-slate-600" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
+      </>
+      )}
     </div>
   );
 };

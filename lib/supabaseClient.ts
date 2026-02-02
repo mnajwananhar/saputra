@@ -4,7 +4,7 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Supabase credentials are not set. Some features may not work.');
+  console.error('❌ Supabase credentials missing');
 }
 
 export const supabase = supabaseUrl && supabaseAnonKey

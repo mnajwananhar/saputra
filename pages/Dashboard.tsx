@@ -3,8 +3,7 @@ import React, { useMemo } from 'react';
 import { useProducts } from '../contexts/ProductContext';
 import { useTransactions } from '../contexts/TransactionContext';
 import { useSuppliers } from '../contexts/SupplierContext';
-import { calculateSMA, calculateSafetyStock, aggregateTransactionsToMonthly } from '../utils';
-import { Package, ShoppingCart, ShieldAlert } from 'lucide-react';
+import { Package, Users, TrendingUp, AlertTriangle, ShoppingBag, DollarSign } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Dashboard: React.FC = () => {
@@ -12,129 +11,185 @@ const Dashboard: React.FC = () => {
   const { transactions } = useTransactions();
   const { suppliers } = useSuppliers();
 
-  const analysis = useMemo(() => {
-    return products.map(product => {
-      // Get transactions for this product
-      const productTransactions = transactions.filter(transaction =>
-        transaction.items.some(item => item.productId === product.id)
-      );
-
-      // Aggregate transactions to monthly data for forecasting
-      const monthlyData = aggregateTransactionsToMonthly(productTransactions);
-
-      // Use the aggregated monthly data for forecasting
-      const { nextPeriodForecast, metrics } = calculateSMA(monthlyData, product.bestN);
-
-      // 2. Hitung Safety Stock dinamis
-      const demands = monthlyData.map(d => d.demand);
-      const dynamicSafety = calculateSafetyStock(demands);
-
-      // 3. Rekomendasi Beli: (Ramalan + SS) - Stok Gudang Saat Ini
-      const forecastRounded = Math.ceil(nextPeriodForecast);
-      const orderQuantity = Math.max(0, (forecastRounded + dynamicSafety) - product.stock.currentStock);
-
-      // 4. Tentukan label target ramalan secara dinamis
-      const lastData = monthlyData[monthlyData.length - 1];
-
-      let targetLabel = 'Periode Berikutnya';
-      if (lastData) {
-        const monthsMap: Record<string, number> = { 'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'Mei': 4, 'Jun': 5, 'Jul': 6, 'Agt': 7, 'Sep': 8, 'Okt': 9, 'Nov': 10, 'Des': 11 };
-        const lastMonthIndex = monthsMap[lastData.month] || 0;
-        const targetMonthDate = new Date(lastData.year, lastMonthIndex + 1);
-        targetLabel = targetMonthDate.toLocaleString('id-ID', { month: 'long', year: 'numeric' });
-      }
-
-      // Get supplier info
-      const supplier = suppliers.find(s => s.id === product.supplierId);
-
-      return {
-        ...product,
-        supplier,
-        forecast: forecastRounded,
-        calculatedSafety: dynamicSafety,
-        mape: metrics.mape,
-        orderQuantity,
-        targetLabel,
-        status: product.stock.currentStock < dynamicSafety ? 'low' : 'ok'
-      };
+  const stats = useMemo(() => {
+    const lowStockProducts = products.filter(p => p.stock.currentStock <= p.stock.minStock);
+    
+    const thisMonth = new Date();
+    const thisMonthTransactions = transactions.filter(t => {
+      const tDate = new Date(t.transactionDate);
+      return tDate.getMonth() === thisMonth.getMonth() && 
+             tDate.getFullYear() === thisMonth.getFullYear();
     });
-  }, [products, transactions, suppliers]);
 
-  // Global metrics
-  const criticalCount = analysis.filter(p => p.status !== 'ok').length;
-  const targetPeriod = analysis.length > 0 ? analysis[0].targetLabel : '-';
+    const monthlyRevenue = thisMonthTransactions.reduce((sum, t) => 
+      sum + t.items.reduce((itemSum, item) => itemSum + (item.price * item.quantity), 0), 0
+    );
+
+    const totalSold = thisMonthTransactions.reduce((sum, t) =>
+      sum + t.items.reduce((itemSum, item) => itemSum + item.quantity, 0), 0
+    );
+
+    const topProducts = products
+      .map(p => {
+        const sold = thisMonthTransactions.reduce((sum, t) =>
+          sum + (t.items.find(i => i.productId === p.id)?.quantity || 0), 0
+        );
+        return { ...p, sold };
+      })
+      .sort((a, b) => b.sold - a.sold)
+      .slice(0, 5);
+
+    return {
+      lowStockProducts,
+      monthlyRevenue,
+      totalSold,
+      topProducts,
+      transactionCount: thisMonthTransactions.length
+    };
+  }, [products, transactions]);
+
+  const formatCurrency = (value: number): string => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0
+    }).format(value);
+  };
+
+  const currentMonth = new Date().toLocaleString('id-ID', { month: 'long', year: 'numeric' });
 
   return (
-    <div className="space-y-10 animate-in fade-in slide-in-from-top-4 duration-700">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div>
-          <h1 className="text-5xl font-heading font-extrabold text-slate-900 tracking-tighter leading-none uppercase">Dashboard</h1>
-          <p className="text-slate-400 mt-3 text-[10px] font-bold uppercase tracking-[0.3em]">Status Persediaan & Ramalan {targetPeriod}</p>
+    <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-700">
+      <div>
+        <h1 className="text-5xl font-heading font-extrabold text-slate-900 tracking-tighter leading-none uppercase">Dashboard</h1>
+        <p className="text-slate-400 mt-3 text-[10px] font-bold uppercase tracking-[0.3em]">Overview & Quick Stats - {currentMonth}</p>
+      </div>
+
+      <div className="grid grid-cols-3 gap-5">
+        <div className="bg-white p-7 rounded-[1.75rem] border border-slate-200 shadow-sm">
+          <div className="flex items-center gap-2.5 text-slate-400 mb-4">
+            <Package className="h-4 w-4" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Total Produk</span>
+          </div>
+          <div className="text-4xl font-heading font-extrabold text-slate-900 tracking-tighter">
+            {products.length} <span className="text-[10px] font-bold uppercase tracking-widest text-slate-300">SKU</span>
+          </div>
+        </div>
+
+        <div className="bg-white p-7 rounded-[1.75rem] border border-slate-200 shadow-sm">
+          <div className="flex items-center gap-2.5 text-slate-400 mb-4">
+            <Users className="h-4 w-4" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Total Supplier</span>
+          </div>
+          <div className="text-4xl font-heading font-extrabold text-slate-900 tracking-tighter">
+            {suppliers.length} <span className="text-[10px] font-bold uppercase tracking-widest text-slate-300">VENDOR</span>
+          </div>
+        </div>
+
+        <div className="bg-white p-7 rounded-[1.75rem] border border-slate-200 shadow-sm">
+          <div className="flex items-center gap-2.5 text-amber-400 mb-4">
+            <AlertTriangle className="h-4 w-4" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Stok Rendah</span>
+          </div>
+          <div className={`text-4xl font-heading font-extrabold tracking-tighter ${stats.lowStockProducts.length > 0 ? 'text-red-500' : 'text-green-500'}`}>
+            {stats.lowStockProducts.length} <span className="text-[10px] font-bold uppercase tracking-widest text-slate-300">PRODUK</span>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
-         {[
-           { label: 'Total Produk', val: products.length, unit: 'SKU', icon: Package },
-           { label: 'Kondisi Kritis', val: criticalCount, unit: 'SKU', icon: ShieldAlert, isCritical: criticalCount > 0 },
-           { label: 'Estimasi Order', val: analysis.reduce((a, b) => a + b.orderQuantity, 0), unit: 'UNIT', icon: ShoppingCart, dark: true },
-         ].map((kpi, idx) => (
-            <div key={idx} className={`${kpi.dark ? 'bg-[#0F172A] border-slate-800 shadow-xl' : 'bg-white border-slate-200 shadow-sm'} p-8 rounded-[2rem] border transition-all`}>
-               <div className={`flex items-center gap-3 ${kpi.dark ? 'text-indigo-400' : 'text-slate-400'} mb-5`}>
-                  <kpi.icon className="h-4 w-4" />
-                  <span className="text-[10px] font-bold uppercase tracking-[0.2em]">{kpi.label}</span>
-               </div>
-               <div className={`text-4xl font-heading font-extrabold ${kpi.dark ? 'text-white' : kpi.isCritical ? 'text-red-500' : 'text-slate-900'} tracking-tighter`}>
-                 {kpi.val} <span className={`text-[10px] font-bold uppercase tracking-widest ${kpi.dark ? 'text-slate-500' : 'text-slate-300'}`}>{kpi.unit}</span>
-               </div>
-            </div>
-         ))}
+      <div className="grid grid-cols-3 gap-5">
+        <div className="bg-[#0F172A] p-7 rounded-[1.75rem] border border-slate-800 shadow-xl">
+          <div className="flex items-center gap-2.5 text-indigo-400 mb-4">
+            <DollarSign className="h-4 w-4" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Pendapatan Bulan Ini</span>
+          </div>
+          <div className="text-2xl font-heading font-extrabold text-white tracking-tighter">
+            {formatCurrency(stats.monthlyRevenue)}
+          </div>
+        </div>
+
+        <div className="bg-[#0F172A] p-7 rounded-[1.75rem] border border-slate-800 shadow-xl">
+          <div className="flex items-center gap-2.5 text-indigo-400 mb-4">
+            <ShoppingBag className="h-4 w-4" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Transaksi Bulan Ini</span>
+          </div>
+          <div className="text-4xl font-heading font-extrabold text-white tracking-tighter">
+            {stats.transactionCount} <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">TRX</span>
+          </div>
+        </div>
+
+        <div className="bg-[#0F172A] p-7 rounded-[1.75rem] border border-slate-800 shadow-xl">
+          <div className="flex items-center gap-2.5 text-indigo-400 mb-4">
+            <TrendingUp className="h-4 w-4" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Unit Terjual</span>
+          </div>
+          <div className="text-4xl font-heading font-extrabold text-white tracking-tighter">
+            {stats.totalSold} <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">UNIT</span>
+          </div>
+        </div>
       </div>
 
-      <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-         <div className="p-10 border-b border-slate-50 flex items-center justify-between">
-            <div>
-              <h3 className="font-heading font-extrabold text-slate-900 text-2xl tracking-tighter uppercase">Rekomendasi Reorder</h3>
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Berdasarkan data histori terakhir</p>
+      {stats.topProducts.length > 0 && (
+        <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
+          <div className="px-8 py-6 border-b border-slate-100">
+            <h3 className="font-heading font-extrabold text-slate-900 text-xl tracking-tighter uppercase">Top 5 Produk Bulan Ini</h3>
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Berdasarkan unit terjual</p>
+          </div>
+          <div className="p-6 space-y-3">
+            {stats.topProducts.map((product, idx) => (
+              <div key={product.id} className="flex items-center justify-between p-4 bg-slate-50/50 rounded-xl hover:bg-slate-50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center font-heading font-black text-base">
+                    {idx + 1}
+                  </div>
+                  <div>
+                    <div className="font-heading font-extrabold text-slate-900 text-sm tracking-tight uppercase">{product.name}</div>
+                    <div className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">{product.unit}</div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-xl font-heading font-extrabold text-indigo-600 tracking-tighter">{product.sold}</div>
+                  <div className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">UNIT</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {stats.lowStockProducts.length > 0 && (
+        <div className="bg-white rounded-[2rem] border border-red-200 shadow-sm overflow-hidden">
+          <div className="px-8 py-6 border-b border-red-100 bg-red-50/30">
+            <div className="flex items-center gap-3">
+              <AlertTriangle className="h-5 w-5 text-red-500" />
+              <h3 className="font-heading font-extrabold text-red-900 text-xl tracking-tighter uppercase">Alert: Stok Rendah</h3>
             </div>
-         </div>
-         
-         <div className="overflow-x-auto">
-            <table className="w-full text-left">
-               <thead className="bg-slate-50/50 text-slate-400">
-                  <tr>
-                     <th className="px-10 py-6 text-[10px] font-bold uppercase tracking-widest">Produk</th>
-                     <th className="px-6 py-6 text-right text-[10px] font-bold uppercase tracking-widest">Gudang</th>
-                     <th className="px-6 py-6 text-right text-[10px] font-bold uppercase tracking-widest">Safety Stock</th>
-                     <th className="px-6 py-6 text-right text-[10px] font-bold uppercase tracking-widest">Ramalan ({targetPeriod})</th>
-                     <th className="px-10 py-6 text-right text-indigo-600 text-[10px] font-bold uppercase tracking-widest bg-indigo-50/10">Beli</th>
-                  </tr>
-               </thead>
-               <tbody className="divide-y divide-slate-100">
-                  {analysis.map((item) => (
-                     <tr key={item.id} className="hover:bg-slate-50/50">
-                        <td className="px-10 py-7">
-                           <div className="font-heading font-extrabold text-slate-900 text-lg tracking-tighter uppercase">{item.name}</div>
-                           <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{item.unit}</div>
-                        </td>
-                        <td className={`px-6 py-7 text-right font-heading font-extrabold text-lg tabular-nums ${item.status === 'low' ? 'text-red-500' : 'text-slate-900'}`}>
-                           {item.stock.currentStock}
-                        </td>
-                        <td className="px-6 py-7 text-right text-slate-400 font-bold tabular-nums">
-                           {item.calculatedSafety}
-                        </td>
-                        <td className="px-6 py-7 text-right text-slate-400 font-bold tabular-nums">
-                           {item.forecast}
-                        </td>
-                        <td className="px-10 py-7 text-right tabular-nums text-indigo-600 font-heading font-black bg-indigo-50/5 text-2xl tracking-tighter">
-                           {item.orderQuantity}
-                        </td>
-                     </tr>
-                  ))}
-               </tbody>
-            </table>
-         </div>
-      </div>
+            <p className="text-[10px] text-red-400 font-bold uppercase tracking-widest mt-0.5">Produk yang perlu segera diorder</p>
+          </div>
+          <div className="p-6 space-y-3 max-h-80 overflow-y-auto">
+            {stats.lowStockProducts.map((product) => (
+              <div key={product.id} className="flex items-center justify-between p-4 bg-red-50/30 rounded-xl border border-red-100">
+                <div>
+                  <div className="font-heading font-extrabold text-slate-900 text-sm tracking-tight uppercase">{product.name}</div>
+                  <div className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">{product.unit}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-xl font-heading font-extrabold text-red-500 tracking-tighter">{product.stock.currentStock}</div>
+                  <div className="text-[9px] text-red-400 font-bold uppercase tracking-widest">MIN: {product.stock.minStock}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="px-6 py-5 border-t border-red-100 bg-red-50/20">
+            <Link 
+              to="/plan" 
+              className="block w-full text-center py-3.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-heading font-black text-[10px] uppercase tracking-widest transition-all"
+            >
+              Lihat Rekomendasi Pembelian
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

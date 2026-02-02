@@ -23,17 +23,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
   };
 
   const isActive = (path: string) => location.pathname === path;
-  const isDataMasterActive = ['/suppliers', '/products', '/employees'].includes(location.pathname);
+  const isDataMasterActive = ['/suppliers', '/products'].includes(location.pathname);
 
-  // Data Master sub-links based on role
+  // Data Master sub-links based on role (only for employee)
   const dataMasterLinks = [
-    // Only employee can see Supplier and Produk
-    ...(!isOwner ? [
-      { name: 'Supplier', path: '/suppliers', icon: Package2 },
-      { name: 'Produk', path: '/products', icon: Package2 },
-    ] : []),
-    // Only owner can see Karyawan
-    ...(isOwner ? [{ name: 'Karyawan', path: '/employees', icon: Users }] : []),
+    { name: 'Supplier', path: '/suppliers', icon: Package2 },
+    { name: 'Produk', path: '/products', icon: Package2 },
   ];
 
   return (
@@ -101,6 +96,19 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
                 <Table className={`h-5 w-5 ${isActive('/data') ? 'text-white' : 'text-slate-300 group-hover:text-slate-500'}`} />
                 Data Historis
               </Link>
+
+              <Link
+                to="/employees"
+                onClick={() => setIsOpen(false)}
+                className={`group flex items-center gap-4 rounded-2xl px-5 py-4 text-[11px] font-black uppercase tracking-widest transition-all duration-200 ${
+                  isActive('/employees')
+                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100'
+                    : 'hover:bg-slate-50 hover:text-slate-900 text-slate-400'
+                }`}
+              >
+                <Users className={`h-5 w-5 ${isActive('/employees') ? 'text-white' : 'text-slate-300 group-hover:text-slate-500'}`} />
+                Manajemen Karyawan
+              </Link>
             </>
           )}
 
@@ -120,44 +128,46 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
             </Link>
           )}
 
-          {/* Data Master - Dropdown (for both roles) */}
-          <div>
-            <button
-              onClick={() => setDataMasterOpen(!dataMasterOpen)}
-              className={`group flex items-center justify-between w-full rounded-2xl px-5 py-4 text-[11px] font-black uppercase tracking-widest transition-all duration-200 ${
-                isDataMasterActive
-                  ? 'bg-indigo-100 text-indigo-600'
-                  : 'hover:bg-slate-50 hover:text-slate-900 text-slate-400'
-              }`}
-            >
-              <div className="flex items-center gap-4">
-                <Database className={`h-5 w-5 ${isDataMasterActive ? 'text-indigo-500' : 'text-slate-300 group-hover:text-slate-500'}`} />
-                Data Master
-              </div>
-              <ChevronDown className={`h-4 w-4 transition-transform ${dataMasterOpen ? 'rotate-180' : ''} ${isDataMasterActive ? 'text-indigo-500' : 'text-slate-300'}`} />
-            </button>
+          {/* Data Master - Dropdown (employee only) */}
+          {!isOwner && (
+            <div>
+              <button
+                onClick={() => setDataMasterOpen(!dataMasterOpen)}
+                className={`group flex items-center justify-between w-full rounded-2xl px-5 py-4 text-[11px] font-black uppercase tracking-widest transition-all duration-200 ${
+                  isDataMasterActive
+                    ? 'bg-indigo-100 text-indigo-600'
+                    : 'hover:bg-slate-50 hover:text-slate-900 text-slate-400'
+                }`}
+              >
+                <div className="flex items-center gap-4">
+                  <Database className={`h-5 w-5 ${isDataMasterActive ? 'text-indigo-500' : 'text-slate-300 group-hover:text-slate-500'}`} />
+                  Data Master
+                </div>
+                <ChevronDown className={`h-4 w-4 transition-transform ${dataMasterOpen ? 'rotate-180' : ''} ${isDataMasterActive ? 'text-indigo-500' : 'text-slate-300'}`} />
+              </button>
 
-            {/* Submenu */}
-            {dataMasterOpen && (
-              <div className="ml-6 mt-2 space-y-1">
-                {dataMasterLinks.map((link) => (
-                  <Link
-                    key={link.name}
-                    to={link.path}
-                    onClick={() => setIsOpen(false)}
-                    className={`group flex items-center gap-3 rounded-xl px-4 py-3 text-[10px] font-bold uppercase tracking-widest transition-all duration-200 ${
-                      isActive(link.path)
-                        ? 'bg-indigo-600 text-white shadow-md'
-                        : 'hover:bg-slate-50 hover:text-slate-900 text-slate-400'
-                    }`}
-                  >
-                    <link.icon className={`h-4 w-4 ${isActive(link.path) ? 'text-white' : 'text-slate-300 group-hover:text-slate-500'}`} />
-                    {link.name}
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
+              {/* Submenu */}
+              {dataMasterOpen && (
+                <div className="ml-6 mt-2 space-y-1">
+                  {dataMasterLinks.map((link) => (
+                    <Link
+                      key={link.name}
+                      to={link.path}
+                      onClick={() => setIsOpen(false)}
+                      className={`group flex items-center gap-3 rounded-xl px-4 py-3 text-[10px] font-bold uppercase tracking-widest transition-all duration-200 ${
+                        isActive(link.path)
+                          ? 'bg-indigo-600 text-white shadow-md'
+                          : 'hover:bg-slate-50 hover:text-slate-900 text-slate-400'
+                      }`}
+                    >
+                      <link.icon className={`h-4 w-4 ${isActive(link.path) ? 'text-white' : 'text-slate-300 group-hover:text-slate-500'}`} />
+                      {link.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
         
         {/* User Info & Logout */}

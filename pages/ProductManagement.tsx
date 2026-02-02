@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useProducts } from '../contexts/ProductContext';
 import { useSuppliers } from '../contexts/SupplierContext';
-import { Plus, Edit2, Save, X } from 'lucide-react';
+import { Plus, Edit2, Save, X, Search } from 'lucide-react';
 
 const ProductManagement: React.FC = () => {
   const { products, loading, addProduct, updateProduct, deleteProduct } = useProducts();
   const { suppliers, loading: suppliersLoading } = useSuppliers();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [formData, setFormData] = useState({
     name: '',
     unit: '',
@@ -101,6 +102,23 @@ const ProductManagement: React.FC = () => {
     }
   };
 
+  const filteredProducts = useMemo(() => {
+    const normalizedQuery = searchQuery.toLowerCase().trim();
+    
+    if (!normalizedQuery) {
+      return products;
+    }
+
+    return products.filter((product) => {
+      const supplier = suppliers.find((s) => s.id === product.supplierId);
+      const matchesName = product.name.toLowerCase().includes(normalizedQuery);
+      const matchesUnit = product.unit.toLowerCase().includes(normalizedQuery);
+      const matchesSupplier = supplier?.name.toLowerCase().includes(normalizedQuery) ?? false;
+
+      return matchesName || matchesUnit || matchesSupplier;
+    });
+  }, [products, suppliers, searchQuery]);
+
   if (loading || suppliersLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -125,6 +143,17 @@ const ProductManagement: React.FC = () => {
         </button>
       </div>
 
+      <div className="relative">
+        <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+        <input
+          type="text"
+          placeholder="Cari produk berdasarkan nama, satuan, atau supplier..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full pl-14 pr-6 py-4 border-2 border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-sm font-medium placeholder:text-slate-400"
+        />
+      </div>
+
       <div className="rounded-[2rem] md:rounded-[2.5rem] border border-slate-200 bg-white shadow-sm overflow-hidden">
         <table className="w-full text-left">
           <thead className="bg-slate-50/50 text-slate-400">
@@ -139,35 +168,48 @@ const ProductManagement: React.FC = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {products.map((product) => {
-              const supplier = suppliers.find(s => s.id === product.supplierId);
-              return (
-                <tr key={product.id} className="hover:bg-slate-50/50">
-                  <td className="px-8 py-6 font-bold text-slate-900 text-[11px] uppercase tracking-widest">{product.name}</td>
-                  <td className="px-6 py-6 text-slate-600 font-bold text-[11px]">{product.unit}</td>
-                  <td className="px-6 py-6 text-slate-600 font-bold text-[11px]">Rp {product.price.toLocaleString('id-ID')}</td>
-                  <td className="px-6 py-6 text-slate-600 font-bold text-[11px]">Rp {product.cost.toLocaleString('id-ID')}</td>
-                  <td className="px-6 py-6 text-slate-600 font-bold text-[11px]">{product.stock.currentStock} {product.unit}</td>
-                  <td className="px-6 py-6 text-slate-600 font-bold text-[11px]">{supplier?.name || '-'}</td>
-                  <td className="px-6 py-6 text-center">
-                    <div className="flex justify-center gap-2">
-                      <button
-                        onClick={() => startEdit(product)}
-                        className="p-2 rounded-xl bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-900 transition-all border border-slate-200"
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(product.id)}
-                        className="p-2 rounded-xl bg-red-50 text-red-500 hover:bg-red-100 transition-all border border-red-200"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
+            {filteredProducts.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="px-8 py-12 text-center">
+                  <div className="flex flex-col items-center gap-3">
+                    <Search className="h-12 w-12 text-slate-300" />
+                    <p className="text-slate-500 font-bold text-sm">
+                      {searchQuery ? 'Tidak ada produk yang cocok dengan pencarian' : 'Belum ada data produk'}
+                    </p>
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              filteredProducts.map((product) => {
+                const supplier = suppliers.find((s) => s.id === product.supplierId);
+                return (
+                  <tr key={product.id} className="hover:bg-slate-50/50">
+                    <td className="px-8 py-6 font-bold text-slate-900 text-[11px] uppercase tracking-widest">{product.name}</td>
+                    <td className="px-6 py-6 text-slate-600 font-bold text-[11px]">{product.unit}</td>
+                    <td className="px-6 py-6 text-slate-600 font-bold text-[11px]">Rp {product.price.toLocaleString('id-ID')}</td>
+                    <td className="px-6 py-6 text-slate-600 font-bold text-[11px]">Rp {product.cost.toLocaleString('id-ID')}</td>
+                    <td className="px-6 py-6 text-slate-600 font-bold text-[11px]">{product.stock.currentStock} {product.unit}</td>
+                    <td className="px-6 py-6 text-slate-600 font-bold text-[11px]">{supplier?.name || '-'}</td>
+                    <td className="px-6 py-6 text-center">
+                      <div className="flex justify-center gap-2">
+                        <button
+                          onClick={() => startEdit(product)}
+                          className="p-2 rounded-xl bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-900 transition-all border border-slate-200"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(product.id)}
+                          className="p-2 rounded-xl bg-red-50 text-red-500 hover:bg-red-100 transition-all border border-red-200"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
       </div>

@@ -3,7 +3,7 @@ import { useProducts } from '../contexts/ProductContext';
 import { useTransactions } from '../contexts/TransactionContext';
 import { useSuppliers } from '../contexts/SupplierContext';
 import { aggregateTransactionsToMonthlyWithDetails, MonthlyDataWithDetails } from '../utils';
-import { Download, FileSpreadsheet, ChevronDown, ChevronUp, Calendar } from 'lucide-react';
+import { Download, FileSpreadsheet, ChevronDown, ChevronUp, Calendar, Search } from 'lucide-react';
 
 interface ExpandedCell {
   productId: string;
@@ -14,62 +14,66 @@ const HistoricalData: React.FC = () => {
   const { products, loading } = useProducts();
   const { transactions, loading: transactionsLoading } = useTransactions();
   const { suppliers, loading: suppliersLoading } = useSuppliers();
-  const [selectedYear, setSelectedYear] = useState<string>('last_1_year');
+  const [selectedYear, setSelectedYear] = useState<string>('2024');
   const [expandedCell, setExpandedCell] = useState<ExpandedCell | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Get available years from transactions
   const availableYears = useMemo(() => {
     const years = new Set<string>();
+    
     transactions.forEach(t => {
       const year = new Date(t.date).getFullYear().toString();
       years.add(year);
     });
+    
     return Array.from(years).sort().reverse();
   }, [transactions]);
+const filteredProducts = useMemo(() => {
+    if (!searchQuery.trim()) return products;
 
-  // Aggregate transaction data by product with daily details
+    const query = searchQuery.toLowerCase();
+    return products.filter(product =>
+      product.name.toLowerCase().includes(query) ||
+      product.unit.toLowerCase().includes(query)
+    );
+  }, [products, searchQuery]);
+
   const aggregatedData = useMemo(() => {
     const result: Record<string, MonthlyDataWithDetails[]> = {};
 
+    filteredP
     products.forEach(product => {
+      // Filter transaksi berdasarkan produk dan tahun terpilih
       const productTransactions = transactions.filter(transaction => {
-        // First filter by product
-        if (!transaction.items.some(item => item.productId === product.id)) {
-          return false;
-        }
+        const hasProduct = transaction.items.some(item => item.productId === product.id);
+        if (!hasProduct) return false;
 
-        // Then filter by selected year
         const transactionDate = new Date(transaction.date);
+        const transactionYear = transactionDate.getFullYear();
 
         if (selectedYear === 'last_1_year') {
-          // Last 1 year means strictly the last 12 months from today backwards
-          // OR it could mean the current calendar year + previous. 
-          // Usually "Last 1 Year" implies a rolling window or simply 'current year'.
-          // The requirement says "1 tahun terakhir". Let's assume rolling 12 months for better utility,
-          // or current year depending on interpretation. 
-          // However, standard "1 Tahun Terakhir" often implies the last 12 months data.
           const oneYearAgo = new Date();
           oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
           return transactionDate >= oneYearAgo;
-        } else {
-          return transactionDate.getFullYear().toString() === selectedYear;
+      filteredP } else {
+          return transactionYear.toString() === selectedYear;
         }
       });
 
       result[product.id] = aggregateTransactionsToMonthlyWithDetails(productTransactions);
     });
-
+    
     return result;
   }, [products, transactions, selectedYear]);
 
   const handleExportCSV = () => {
-    if (products.length === 0) return;
+    if (filteredProducts.length === 0) return;
 
-    const headers = ['Periode', ...products.map(p => `${p.name} (${p.unit})`)];
+    const headers = ['Periode', ...filteredProducts.map(p => `${p.name} (${p.unit})`)];
 
-    // Get all unique periods across all products
     const allPeriods = new Set<string>();
-    products.forEach(p => {
+    filteredProducts.forEach(p => {
       aggregatedData[p.id].forEach(data => allPeriods.add(data.periodLabel));
     });
 
@@ -79,7 +83,7 @@ const HistoricalData: React.FC = () => {
       const rowData = [
         period,
         ...products.map(p => {
-          const periodData = aggregatedData[p.id].find(d => d.periodLabel === period);
+          cfilteredPnst periodData = aggregatedData[p.id].find(d => d.periodLabel === period);
           return periodData ? periodData.demand : 0;
         })
       ];
@@ -125,9 +129,8 @@ const HistoricalData: React.FC = () => {
     );
   }
 
-  // Get all unique periods across all products for the table header
   const allPeriods = new Set<string>();
-  products.forEach(p => {
+  filteredProducts.forEach(p => {
     aggregatedData[p.id].forEach(data => allPeriods.add(data.periodLabel));
   });
 
@@ -159,10 +162,23 @@ const HistoricalData: React.FC = () => {
   return (
     <div className="space-y-10 animate-in fade-in duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-        <div>
-          <h1 className="text-5xl font-heading font-extrabold text-slate-900 tracking-tighter leading-none">Data Historis</h1>
-          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] mt-2">Historical Sales Record • Klik sel untuk detail harian</p>
-        </div>
+        <div>gap-6">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+          <div>
+            <h1 className="text-5xl font-heading font-extrabold text-slate-900 tracking-tighter leading-none">Data Historis</h1>
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] mt-2">Historical Sales Record • Klik sel untuk detail harian</p>
+          </div>
+
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Cari produk..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-11 pr-4 py-3 w-full md:w-72 rounded-2xl border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+            />
+          </div
 
         <div className="flex items-center gap-3">
           {/* Year Filter Dropdown */}
@@ -199,7 +215,22 @@ const HistoricalData: React.FC = () => {
             <thead className="bg-slate-50/50 text-slate-400 sticky top-0 z-20">
               <tr>
                 <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-[0.2em] sticky left-0 bg-slate-100 z-30 min-w-[200px] border-b border-r border-slate-200">Produk</th>
-                {sortedPeriods.map((period, index) => (
+               filteredProducts.length === 0 ? (
+                <tr>
+                  <td colSpan={sortedPeriods.length + 1} className="px-6 py-12 text-center">
+                    <div className="flex flex-col items-center gap-2">
+                      <Search className="h-8 w-8 text-slate-300" />
+                      <p className="text-sm font-bold text-slate-400 uppercase tracking-wider">
+                        Tidak ada produk yang cocok
+                      </p>
+                      <p className="text-xs text-slate-300">
+                        Coba kata kunci lain
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                filteredP{sortedPeriods.map((period, index) => (
                   <th key={index} className="px-4 py-4 text-center text-[10px] font-bold uppercase tracking-[0.2em] whitespace-nowrap bg-slate-50 border-b border-slate-200 min-w-[80px]">
                     {period}
                   </th>
@@ -262,7 +293,8 @@ const HistoricalData: React.FC = () => {
                                 </div>
                               ))}
                             </div>
-                            <div className="mt-3 pt-2 border-t border-slate-100 flex justify-between items-center">
+                ))
+                           <div className="mt-3 pt-2 border-t border-slate-100 flex justify-between items-center">
                               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total</span>
                               <span className="font-heading font-extrabold text-indigo-600 tabular-nums">{periodData.demand} {p.unit}</span>
                             </div>
@@ -282,7 +314,7 @@ const HistoricalData: React.FC = () => {
           </table>
         </div>
         <div className="bg-slate-50/30 p-6 border-t border-slate-100">
-          <p className="text-[10px] text-center text-slate-400 font-bold uppercase tracking-[0.2em]">
+          <p className="text-[10px] text-center text-slate-4filteredProducts.length} produk {searchQuery && `(dari ${products.length} total)`}tracking-[0.2em]">
             Data diambil dari transaksi penjualan harian • {products.length} produk • {sortedPeriods.length} periode • Klik angka untuk detail
           </p>
         </div>

@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSuppliers } from '../contexts/SupplierContext';
-import { Plus, Edit2, Save, X } from 'lucide-react';
+import { Plus, Edit2, Save, X, Search } from 'lucide-react';
 
 const Suppliers: React.FC = () => {
   const { suppliers, loading, addSupplier, updateSupplier, deleteSupplier } = useSuppliers();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [formData, setFormData] = useState({
     name: '',
     contact: '',
@@ -65,6 +66,24 @@ const Suppliers: React.FC = () => {
     }
   };
 
+  const filteredSuppliers = useMemo(() => {
+    const normalizedQuery = searchQuery.toLowerCase().trim();
+    
+    if (!normalizedQuery) {
+      return suppliers;
+    }
+
+    return suppliers.filter((supplier) => {
+      const matchesName = supplier.name.toLowerCase().includes(normalizedQuery);
+      const matchesContact = supplier.contact?.toLowerCase().includes(normalizedQuery) ?? false;
+      const matchesPhone = supplier.phone?.toLowerCase().includes(normalizedQuery) ?? false;
+      const matchesEmail = supplier.email?.toLowerCase().includes(normalizedQuery) ?? false;
+      const matchesAddress = supplier.address?.toLowerCase().includes(normalizedQuery) ?? false;
+
+      return matchesName || matchesContact || matchesPhone || matchesEmail || matchesAddress;
+    });
+  }, [suppliers, searchQuery]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -89,6 +108,17 @@ const Suppliers: React.FC = () => {
         </button>
       </div>
 
+      <div className="relative">
+        <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+        <input
+          type="text"
+          placeholder="Cari supplier berdasarkan nama, kontak, telepon, email, atau alamat..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full pl-14 pr-6 py-4 border-2 border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-sm font-medium placeholder:text-slate-400"
+        />
+      </div>
+
       <div className="rounded-[2rem] md:rounded-[2.5rem] border border-slate-200 bg-white shadow-sm overflow-hidden">
         <table className="w-full text-left">
           <thead className="bg-slate-50/50 text-slate-400">
@@ -102,31 +132,44 @@ const Suppliers: React.FC = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {suppliers.map((supplier) => (
-              <tr key={supplier.id} className="hover:bg-slate-50/50">
-                <td className="px-8 py-6 font-bold text-slate-900 text-[11px] uppercase tracking-widest">{supplier.name}</td>
-                <td className="px-6 py-6 text-slate-600 font-bold text-[11px]">{supplier.contact || '-'}</td>
-                <td className="px-6 py-6 text-slate-600 font-bold text-[11px]">{supplier.phone || '-'}</td>
-                <td className="px-6 py-6 text-slate-600 font-bold text-[11px]">{supplier.email || '-'}</td>
-                <td className="px-6 py-6 text-slate-600 font-bold text-[11px]">{supplier.address || '-'}</td>
-                <td className="px-6 py-6 text-center">
-                  <div className="flex justify-center gap-2">
-                    <button
-                      onClick={() => startEdit(supplier)}
-                      className="p-2 rounded-xl bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-900 transition-all border border-slate-200"
-                    >
-                      <Edit2 className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(supplier.id)}
-                      className="p-2 rounded-xl bg-red-50 text-red-500 hover:bg-red-100 transition-all border border-red-200"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
+            {filteredSuppliers.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="px-8 py-12 text-center">
+                  <div className="flex flex-col items-center gap-3">
+                    <Search className="h-12 w-12 text-slate-300" />
+                    <p className="text-slate-500 font-bold text-sm">
+                      {searchQuery ? 'Tidak ada supplier yang cocok dengan pencarian' : 'Belum ada data supplier'}
+                    </p>
                   </div>
                 </td>
               </tr>
-            ))}
+            ) : (
+              filteredSuppliers.map((supplier) => (
+                <tr key={supplier.id} className="hover:bg-slate-50/50">
+                  <td className="px-8 py-6 font-bold text-slate-900 text-[11px] uppercase tracking-widest">{supplier.name}</td>
+                  <td className="px-6 py-6 text-slate-600 font-bold text-[11px]">{supplier.contact || '-'}</td>
+                  <td className="px-6 py-6 text-slate-600 font-bold text-[11px]">{supplier.phone || '-'}</td>
+                  <td className="px-6 py-6 text-slate-600 font-bold text-[11px]">{supplier.email || '-'}</td>
+                  <td className="px-6 py-6 text-slate-600 font-bold text-[11px]">{supplier.address || '-'}</td>
+                  <td className="px-6 py-6 text-center">
+                    <div className="flex justify-center gap-2">
+                      <button
+                        onClick={() => startEdit(supplier)}
+                        className="p-2 rounded-xl bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-900 transition-all border border-slate-200"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(supplier.id)}
+                        className="p-2 rounded-xl bg-red-50 text-red-500 hover:bg-red-100 transition-all border border-red-200"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
