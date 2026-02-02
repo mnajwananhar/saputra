@@ -304,7 +304,6 @@ export const transactionService = {
         id,
         date,
         totalAmount,
-        note,
         createdAt,
         updatedAt,
         items:TransactionItem (
@@ -330,7 +329,6 @@ export const transactionService = {
       id: item.id,
       date: item.date,
       totalAmount: item.totalAmount,
-      note: item.note,
       items: item.items.map(i => ({
         id: i.id,
         transactionId: i.transactionId,
@@ -363,7 +361,6 @@ export const transactionService = {
         id,
         date,
         totalAmount,
-        note,
         createdAt,
         updatedAt,
         items:TransactionItem (
@@ -393,7 +390,6 @@ export const transactionService = {
       id: data.id,
       date: data.date,
       totalAmount: data.totalAmount,
-      note: data.note,
       items: data.items.map(i => ({
         id: i.id,
         transactionId: i.transactionId,
@@ -422,16 +418,15 @@ export const transactionService = {
   create: async (transaction: Omit<Transaction, 'id' | 'date' | 'createdAt' | 'updatedAt'>): Promise<Transaction> => {
     // Generate ID manually
     const id = 'trx_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
-    
+
     const now = new Date().toISOString();
-    
+
     // First, insert the transaction (without paymentMethod)
     const { data: transactionData, error: transactionError } = await supabase
       .from('Transaction')
       .insert([{
         id,
         totalAmount: transaction.totalAmount,
-        note: transaction.note || null,
         createdAt: now,
         updatedAt: now
       }])
@@ -466,7 +461,6 @@ export const transactionService = {
       .from('Transaction')
       .update({
         totalAmount: updates.totalAmount,
-        note: updates.note,
         updatedAt: new Date().toISOString()
       })
       .eq('id', id)
@@ -479,7 +473,6 @@ export const transactionService = {
       id: data.id,
       date: data.date,
       totalAmount: data.totalAmount,
-      note: data.note,
       items: [], // Would need to fetch separately
       createdAt: data.createdAt,
       updatedAt: data.updatedAt

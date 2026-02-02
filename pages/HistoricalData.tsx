@@ -14,22 +14,53 @@ const HistoricalData: React.FC = () => {
   const { products, loading } = useProducts();
   const { transactions, loading: transactionsLoading } = useTransactions();
   const { suppliers, loading: suppliersLoading } = useSuppliers();
+  const [selectedYear, setSelectedYear] = useState<string>('last_1_year');
   const [expandedCell, setExpandedCell] = useState<ExpandedCell | null>(null);
+
+  // Get available years from transactions
+  const availableYears = useMemo(() => {
+    const years = new Set<string>();
+    transactions.forEach(t => {
+      const year = new Date(t.date).getFullYear().toString();
+      years.add(year);
+    });
+    return Array.from(years).sort().reverse();
+  }, [transactions]);
 
   // Aggregate transaction data by product with daily details
   const aggregatedData = useMemo(() => {
     const result: Record<string, MonthlyDataWithDetails[]> = {};
 
     products.forEach(product => {
-      const productTransactions = transactions.filter(transaction =>
-        transaction.items.some(item => item.productId === product.id)
-      );
+      const productTransactions = transactions.filter(transaction => {
+        // First filter by product
+        if (!transaction.items.some(item => item.productId === product.id)) {
+          return false;
+        }
+
+        // Then filter by selected year
+        const transactionDate = new Date(transaction.date);
+
+        if (selectedYear === 'last_1_year') {
+          // Last 1 year means strictly the last 12 months from today backwards
+          // OR it could mean the current calendar year + previous. 
+          // Usually "Last 1 Year" implies a rolling window or simply 'current year'.
+          // The requirement says "1 tahun terakhir". Let's assume rolling 12 months for better utility,
+          // or current year depending on interpretation. 
+          // However, standard "1 Tahun Terakhir" often implies the last 12 months data.
+          const oneYearAgo = new Date();
+          oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+          return transactionDate >= oneYearAgo;
+        } else {
+          return transactionDate.getFullYear().toString() === selectedYear;
+        }
+      });
 
       result[product.id] = aggregateTransactionsToMonthlyWithDetails(productTransactions);
     });
 
     return result;
-  }, [products, transactions]);
+  }, [products, transactions, selectedYear]);
 
   const handleExportCSV = () => {
     if (products.length === 0) return;
@@ -60,7 +91,7 @@ const HistoricalData: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `data_penjualan_saputra_jaya_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `data_penjualan_saputra_jaya_${selectedYear}_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -94,13 +125,36 @@ const HistoricalData: React.FC = () => {
     );
   }
 
-  // Get all unique periods across all products
+  // Get all unique periods across all products for the table header
   const allPeriods = new Set<string>();
   products.forEach(p => {
     aggregatedData[p.id].forEach(data => allPeriods.add(data.periodLabel));
   });
 
-  const sortedPeriods = Array.from(allPeriods).sort();
+  // Sort periods. 
+  // Note: periodLabel format is "Month-Year" (e.g. "Jan-24"). 
+  // String sort works coincidentally for some formats but safer to parse.
+  // aggregateTransactionsToMonthlyWithDetails returns sorted array, so we can rely on that structure if handled carefully,
+  // but here we merge data from multiple products.
+
+  // Custom sort for "MMM-YY" format
+  const monthMap: Record<string, number> = {
+    'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'Mei': 4, 'Jun': 5,
+    'Jul': 6, 'Agt': 7, 'Sep': 8, 'Okt': 9, 'Nov': 10, 'Des': 11
+  };
+
+  const sortedPeriods = Array.from(allPeriods).sort((a, b) => {
+    const [monthA, yearA] = a.split('-');
+    const [monthB, yearB] = b.split('-');
+
+    // Compare years first (assuming 2 digits year means 20xx)
+    const yA = parseInt(yearA);
+    const yB = parseInt(yearB);
+    if (yA !== yB) return yA - yB;
+
+    // Compare months
+    return monthMap[monthA] - monthMap[monthB];
+  });
 
   return (
     <div className="space-y-10 animate-in fade-in duration-500">
@@ -109,14 +163,34 @@ const HistoricalData: React.FC = () => {
           <h1 className="text-5xl font-heading font-extrabold text-slate-900 tracking-tighter leading-none">Data Historis</h1>
           <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] mt-2">Historical Sales Record • Klik sel untuk detail harian</p>
         </div>
-        <button
-          onClick={handleExportCSV}
-          disabled={sortedPeriods.length === 0}
-          className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-8 py-4 text-xs font-black text-slate-700 shadow-sm hover:bg-slate-50 hover:border-slate-400 transition-all uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <Download className="h-4 w-4" />
-          Export CSV
-        </button>
+
+        <div className="flex items-center gap-3">
+          {/* Year Filter Dropdown */}
+          <div className="relative">
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(e.target.value)}
+              className="appearance-none pl-4 pr-10 py-4 rounded-2xl border border-slate-200 bg-white text-xs font-black text-slate-700 shadow-sm hover:bg-slate-50 hover:border-slate-400 transition-all uppercase tracking-widest cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+            >
+              <option value="last_1_year">1 TAHUN TERAKHIR</option>
+              {availableYears.map(year => (
+                <option key={year} value={year}>{year}</option>
+              ))}
+            </select>
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+              <ChevronDown className="h-4 w-4" />
+            </div>
+          </div>
+
+          <button
+            onClick={handleExportCSV}
+            disabled={sortedPeriods.length === 0}
+            className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-8 py-4 text-xs font-black text-slate-700 shadow-sm hover:bg-slate-50 hover:border-slate-400 transition-all uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Download className="h-4 w-4" />
+            Export CSV
+          </button>
+        </div>
       </div>
 
       <div className="rounded-[2.5rem] border border-slate-200 bg-white shadow-sm overflow-hidden flex flex-col">
@@ -130,6 +204,11 @@ const HistoricalData: React.FC = () => {
                     {period}
                   </th>
                 ))}
+                {sortedPeriods.length === 0 && (
+                  <th className="px-4 py-4 text-center text-[10px] font-bold uppercase tracking-[0.2em] bg-slate-50 border-b border-slate-200 w-full">
+                    -
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -192,6 +271,11 @@ const HistoricalData: React.FC = () => {
                       </td>
                     );
                   })}
+                  {sortedPeriods.length === 0 && (
+                    <td className="px-4 py-4 text-center border-b border-slate-100 text-slate-400 text-xs italic">
+                      Tidak ada data
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>

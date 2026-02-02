@@ -60,7 +60,6 @@ export interface Transaction {
   id: string;
   date: string;
   totalAmount: number;
-  note?: string;
   items: TransactionItem[];
   createdAt: string;
   updatedAt: string;
