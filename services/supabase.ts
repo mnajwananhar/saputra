@@ -1,5 +1,5 @@
-import { ProductData, Supplier, Transaction } from '../types';
-import { supabase, mockSupabase } from '../lib/supabaseClient';
+import { ProductData, Supplier, Transaction } from "../types";
+import { supabase, mockSupabase } from "../lib/supabaseClient";
 
 // Use mock client if supabase is not available
 const client = supabase || mockSupabase;
@@ -8,8 +8,9 @@ const client = supabase || mockSupabase;
 export const productService = {
   getAll: async (): Promise<ProductData[]> => {
     const { data, error } = await client
-      .from('Product')
-      .select(`
+      .from("Product")
+      .select(
+        `
         id,
         name,
         unit,
@@ -22,14 +23,15 @@ export const productService = {
         updatedAt,
         supplierId,
         Supplier (id, name, contact, address, phone, email, createdAt, updatedAt)
-      `)
-      .order('createdAt', { ascending: false });
+      `,
+      )
+      .order("createdAt", { ascending: false });
 
     if (error) throw new Error(error.message);
 
     if (!data) return []; // Handle case where no data is returned
 
-    return data.map(item => ({
+    return data.map((item) => ({
       id: item.id,
       name: item.name,
       unit: item.unit,
@@ -37,30 +39,33 @@ export const productService = {
       cost: item.cost,
       stock: {
         currentStock: item.currentStock,
-        safetyStock: item.safetyStock
+        safetyStock: item.safetyStock,
       },
       bestN: item.bestN,
       supplierId: item.supplierId,
-      supplier: item.Supplier ? {
-        id: item.Supplier.id,
-        name: item.Supplier.name,
-        contact: item.Supplier.contact,
-        address: item.Supplier.address,
-        phone: item.Supplier.phone,
-        email: item.Supplier.email,
-        createdAt: item.Supplier.createdAt,
-        updatedAt: item.Supplier.updatedAt
-      } : undefined,
+      supplier: item.Supplier
+        ? {
+            id: item.Supplier.id,
+            name: item.Supplier.name,
+            contact: item.Supplier.contact,
+            address: item.Supplier.address,
+            phone: item.Supplier.phone,
+            email: item.Supplier.email,
+            createdAt: item.Supplier.createdAt,
+            updatedAt: item.Supplier.updatedAt,
+          }
+        : undefined,
       data: [], // Historical data would be fetched separately if needed
       createdAt: item.createdAt,
-      updatedAt: item.updatedAt
+      updatedAt: item.updatedAt,
     }));
   },
 
   getById: async (id: string): Promise<ProductData | null> => {
     const { data, error } = await supabase
-      .from('Product')
-      .select(`
+      .from("Product")
+      .select(
+        `
         id, 
         name, 
         unit, 
@@ -73,12 +78,13 @@ export const productService = {
         updatedAt,
         supplierId,
         Supplier (id, name, contact, address, phone, email, createdAt, updatedAt)
-      `)
-      .eq('id', id)
+      `,
+      )
+      .eq("id", id)
       .single();
 
     if (error) {
-      if (error.code === 'PGRST116') return null; // Row not found
+      if (error.code === "PGRST116") return null; // Row not found
       throw new Error(error.message);
     }
 
@@ -90,39 +96,45 @@ export const productService = {
       cost: data.cost,
       stock: {
         currentStock: data.currentStock,
-        safetyStock: data.safetyStock
+        safetyStock: data.safetyStock,
       },
       bestN: data.bestN,
       supplierId: data.supplierId,
-      supplier: data.Supplier ? {
-        id: data.Supplier.id,
-        name: data.Supplier.name,
-        contact: data.Supplier.contact,
-        address: data.Supplier.address,
-        phone: data.Supplier.phone,
-        email: data.Supplier.email,
-        createdAt: data.Supplier.createdAt,
-        updatedAt: data.Supplier.updatedAt
-      } : undefined,
+      supplier: data.Supplier
+        ? {
+            id: data.Supplier.id,
+            name: data.Supplier.name,
+            contact: data.Supplier.contact,
+            address: data.Supplier.address,
+            phone: data.Supplier.phone,
+            email: data.Supplier.email,
+            createdAt: data.Supplier.createdAt,
+            updatedAt: data.Supplier.updatedAt,
+          }
+        : undefined,
       data: [], // Historical data would be fetched separately if needed
       createdAt: data.createdAt,
-      updatedAt: data.updatedAt
+      updatedAt: data.updatedAt,
     };
   },
 
-  create: async (product: Omit<ProductData, 'id' | 'data' | 'createdAt' | 'updatedAt'>): Promise<ProductData> => {
+  create: async (
+    product: Omit<ProductData, "id" | "data" | "createdAt" | "updatedAt">,
+  ): Promise<ProductData> => {
     const { data, error } = await supabase
-      .from('Product')
-      .insert([{
-        name: product.name,
-        unit: product.unit,
-        price: product.price,
-        cost: product.cost,
-        currentStock: product.stock.currentStock,
-        safetyStock: product.stock.safetyStock,
-        bestN: product.bestN,
-        supplierId: product.supplierId
-      }])
+      .from("Product")
+      .insert([
+        {
+          name: product.name,
+          unit: product.unit,
+          price: product.price,
+          cost: product.cost,
+          currentStock: product.stock.currentStock,
+          safetyStock: product.stock.safetyStock,
+          bestN: product.bestN,
+          supplierId: product.supplierId,
+        },
+      ])
       .select()
       .single();
 
@@ -136,19 +148,24 @@ export const productService = {
       cost: data.cost,
       stock: {
         currentStock: data.currentStock,
-        safetyStock: data.safetyStock
+        safetyStock: data.safetyStock,
       },
       bestN: data.bestN,
       supplierId: data.supplierId,
       data: [],
       createdAt: data.createdAt,
-      updatedAt: data.updatedAt
+      updatedAt: data.updatedAt,
     };
   },
 
-  update: async (id: string, updates: Partial<Omit<ProductData, 'id' | 'data' | 'createdAt' | 'updatedAt'>>): Promise<ProductData> => {
+  update: async (
+    id: string,
+    updates: Partial<
+      Omit<ProductData, "id" | "data" | "createdAt" | "updatedAt">
+    >,
+  ): Promise<ProductData> => {
     const { data, error } = await supabase
-      .from('Product')
+      .from("Product")
       .update({
         name: updates.name,
         unit: updates.unit,
@@ -158,9 +175,9 @@ export const productService = {
         safetyStock: updates.stock?.safetyStock,
         bestN: updates.bestN,
         supplierId: updates.supplierId,
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       })
-      .eq('id', id)
+      .eq("id", id)
       .select()
       .single();
 
@@ -174,34 +191,35 @@ export const productService = {
       cost: data.cost,
       stock: {
         currentStock: data.currentStock,
-        safetyStock: data.safetyStock
+        safetyStock: data.safetyStock,
       },
       bestN: data.bestN,
       supplierId: data.supplierId,
       data: [],
       createdAt: data.createdAt,
-      updatedAt: data.updatedAt
+      updatedAt: data.updatedAt,
     };
   },
 
   delete: async (id: string): Promise<void> => {
-    const { error } = await supabase
-      .from('Product')
-      .delete()
-      .eq('id', id);
+    const { error } = await supabase.from("Product").delete().eq("id", id);
 
     if (error) throw new Error(error.message);
   },
 
-  updateStock: async (id: string, currentStock: number, safetyStock: number): Promise<ProductData> => {
+  updateStock: async (
+    id: string,
+    currentStock: number,
+    safetyStock: number,
+  ): Promise<ProductData> => {
     const { data, error } = await supabase
-      .from('Product')
+      .from("Product")
       .update({
         currentStock,
         safetyStock,
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       })
-      .eq('id', id)
+      .eq("id", id)
       .select()
       .single();
 
@@ -215,24 +233,24 @@ export const productService = {
       cost: data.cost,
       stock: {
         currentStock: data.currentStock,
-        safetyStock: data.safetyStock
+        safetyStock: data.safetyStock,
       },
       bestN: data.bestN,
       supplierId: data.supplierId,
       data: [],
       createdAt: data.createdAt,
-      updatedAt: data.updatedAt
+      updatedAt: data.updatedAt,
     };
-  }
+  },
 };
 
 // Supplier Service
 export const supplierService = {
   getAll: async (): Promise<Supplier[]> => {
     const { data, error } = await client
-      .from('Supplier')
-      .select('*')
-      .order('createdAt', { ascending: false });
+      .from("Supplier")
+      .select("*")
+      .order("createdAt", { ascending: false });
 
     if (error) throw new Error(error.message);
 
@@ -241,29 +259,33 @@ export const supplierService = {
 
   getById: async (id: string): Promise<Supplier | null> => {
     const { data, error } = await client
-      .from('Supplier')
-      .select('*')
-      .eq('id', id)
+      .from("Supplier")
+      .select("*")
+      .eq("id", id)
       .single();
 
     if (error) {
-      if (error.code === 'PGRST116') return null; // Row not found
+      if (error.code === "PGRST116") return null; // Row not found
       throw new Error(error.message);
     }
 
     return data;
   },
 
-  create: async (supplier: Omit<Supplier, 'id' | 'createdAt' | 'updatedAt'>): Promise<Supplier> => {
+  create: async (
+    supplier: Omit<Supplier, "id" | "createdAt" | "updatedAt">,
+  ): Promise<Supplier> => {
     const { data, error } = await client
-      .from('Supplier')
-      .insert([{
-        name: supplier.name,
-        contact: supplier.contact,
-        address: supplier.address,
-        phone: supplier.phone,
-        email: supplier.email
-      }])
+      .from("Supplier")
+      .insert([
+        {
+          name: supplier.name,
+          contact: supplier.contact,
+          address: supplier.address,
+          phone: supplier.phone,
+          email: supplier.email,
+        },
+      ])
       .select()
       .single();
 
@@ -272,11 +294,14 @@ export const supplierService = {
     return data;
   },
 
-  update: async (id: string, updates: Partial<Omit<Supplier, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Supplier> => {
+  update: async (
+    id: string,
+    updates: Partial<Omit<Supplier, "id" | "createdAt" | "updatedAt">>,
+  ): Promise<Supplier> => {
     const { data, error } = await client
-      .from('Supplier')
+      .from("Supplier")
       .update(updates)
-      .eq('id', id)
+      .eq("id", id)
       .select()
       .single();
 
@@ -286,13 +311,10 @@ export const supplierService = {
   },
 
   delete: async (id: string): Promise<void> => {
-    const { error } = await client
-      .from('Supplier')
-      .delete()
-      .eq('id', id);
+    const { error } = await client.from("Supplier").delete().eq("id", id);
 
     if (error) throw new Error(error.message);
-  }
+  },
 };
 
 // Transaction Service
@@ -304,12 +326,13 @@ export const transactionService = {
       let from = 0;
       const pageSize = 1000;
       let pageCount = 0;
-      
+
       while (true) {
         pageCount++;
         const { data, error } = await client
-          .from('Transaction')
-          .select(`
+          .from("Transaction")
+          .select(
+            `
             id,
             date,
             totalAmount,
@@ -329,60 +352,64 @@ export const transactionService = {
                 cost
               )
             )
-          `)
-          .order('date', { ascending: false })
+          `,
+          )
+          .order("date", { ascending: false })
           .range(from, from + pageSize - 1);
 
         if (error) throw new Error(error.message);
-        
+
         if (!data || data.length === 0) break;
-        
+
         allData = [...allData, ...data];
-        
+
         if (data.length < pageSize) break;
-        
+
         from += pageSize;
       }
 
-      const mapped = allData.map(item => ({
+      const mapped = allData.map((item) => ({
         id: item.id,
         date: item.date,
         totalAmount: item.totalAmount,
-        items: item.items.map(i => ({
+        items: item.items.map((i) => ({
           id: i.id,
           transactionId: item.id,
           productId: i.productId,
-          product: i.Product ? {
-            id: i.Product.id,
-            name: i.Product.name,
-            unit: i.Product.unit,
-            price: i.Product.price,
-            cost: i.Product.cost,
-            stock: { currentStock: 0, safetyStock: 0 },
-            bestN: 4,
-            data: [],
-            createdAt: '',
-            updatedAt: '',
-          } : undefined,
+          product: i.Product
+            ? {
+                id: i.Product.id,
+                name: i.Product.name,
+                unit: i.Product.unit,
+                price: i.Product.price,
+                cost: i.Product.cost,
+                stock: { currentStock: 0, safetyStock: 0 },
+                bestN: 4,
+                data: [],
+                createdAt: "",
+                updatedAt: "",
+              }
+            : undefined,
           quantity: i.quantity,
           price: i.price,
-          subtotal: i.subtotal
+          subtotal: i.subtotal,
         })),
         createdAt: item.createdAt,
-        updatedAt: item.updatedAt
+        updatedAt: item.updatedAt,
       }));
-      
+
       return mapped;
     } catch (err) {
-      console.error('Error fetching transactions:', err);
+      console.error("Error fetching transactions:", err);
       throw err;
     }
   },
 
   getById: async (id: string): Promise<Transaction | null> => {
     const { data, error } = await client
-      .from('Transaction')
-      .select(`
+      .from("Transaction")
+      .select(
+        `
         id,
         date,
         totalAmount,
@@ -402,12 +429,13 @@ export const transactionService = {
             cost
           )
         )
-      `)
-      .eq('id', id)
+      `,
+      )
+      .eq("id", id)
       .single();
 
     if (error) {
-      if (error.code === 'PGRST116') return null; // Row not found
+      if (error.code === "PGRST116") return null; // Row not found
       throw new Error(error.message);
     }
 
@@ -415,51 +443,59 @@ export const transactionService = {
       id: data.id,
       date: data.date,
       totalAmount: data.totalAmount,
-      items: data.items.map(i => ({
+      items: data.items.map((i) => ({
         id: i.id,
         transactionId: i.transactionId,
         productId: i.productId,
-        product: i.Product ? {
-          id: i.Product.id,
-          name: i.Product.name,
-          unit: i.Product.unit,
-          price: i.Product.price,
-          cost: i.Product.cost,
-          stock: { currentStock: 0, safetyStock: 0 }, // Placeholder
-          bestN: 4, // Placeholder
-          data: [], // Placeholder
-          createdAt: '', // Placeholder
-          updatedAt: '', // Placeholder
-        } : undefined,
+        product: i.Product
+          ? {
+              id: i.Product.id,
+              name: i.Product.name,
+              unit: i.Product.unit,
+              price: i.Product.price,
+              cost: i.Product.cost,
+              stock: { currentStock: 0, safetyStock: 0 }, // Placeholder
+              bestN: 4, // Placeholder
+              data: [], // Placeholder
+              createdAt: "", // Placeholder
+              updatedAt: "", // Placeholder
+            }
+          : undefined,
         quantity: i.quantity,
         price: i.price,
-        subtotal: i.subtotal
+        subtotal: i.subtotal,
       })),
       createdAt: data.createdAt,
-      updatedAt: data.updatedAt
+      updatedAt: data.updatedAt,
     };
   },
 
-  create: async (transaction: Omit<Transaction, 'id' | 'date' | 'createdAt' | 'updatedAt'>): Promise<Transaction> => {
+  create: async (
+    transaction: Omit<Transaction, "id" | "date" | "createdAt" | "updatedAt">,
+  ): Promise<Transaction> => {
     // Generate ID manually
-    const id = 'trx_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
+    const id =
+      "trx_" +
+      Date.now().toString(36) +
+      Math.random().toString(36).substring(2, 9);
 
     const now = new Date().toISOString();
 
     // First, insert the transaction (without paymentMethod)
     const { data: transactionData, error: transactionError } = await client
-      .from('Transaction')
-      .insert([{
-        id,
-        totalAmount: transaction.totalAmount,
-        createdAt: now,
-        updatedAt: now
-      }])
+      .from("Transaction")
+      .insert([
+        {
+          id,
+          totalAmount: transaction.totalAmount,
+          createdAt: now,
+          updatedAt: now,
+        },
+      ])
       .select()
       .single();
 
     if (transactionError) throw new Error(transactionError.message);
-
 
     // Then, insert the transaction items with generated IDs
     const itemsToInsert = transaction.items.map((item, index) => ({
@@ -468,11 +504,11 @@ export const transactionService = {
       productId: item.productId,
       quantity: item.quantity,
       price: item.price,
-      subtotal: item.subtotal
+      subtotal: item.subtotal,
     }));
 
     const { error: itemsError } = await client
-      .from('TransactionItem')
+      .from("TransactionItem")
       .insert(itemsToInsert);
 
     if (itemsError) throw new Error(itemsError.message);
@@ -481,14 +517,19 @@ export const transactionService = {
     return await transactionService.getById(transactionData.id);
   },
 
-  update: async (id: string, updates: Partial<Omit<Transaction, 'id' | 'date' | 'createdAt' | 'updatedAt'>>): Promise<Transaction> => {
+  update: async (
+    id: string,
+    updates: Partial<
+      Omit<Transaction, "id" | "date" | "createdAt" | "updatedAt">
+    >,
+  ): Promise<Transaction> => {
     const { data, error } = await client
-      .from('Transaction')
+      .from("Transaction")
       .update({
         totalAmount: updates.totalAmount,
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       })
-      .eq('id', id)
+      .eq("id", id)
       .select()
       .single();
 
@@ -500,16 +541,13 @@ export const transactionService = {
       totalAmount: data.totalAmount,
       items: [], // Would need to fetch separately
       createdAt: data.createdAt,
-      updatedAt: data.updatedAt
+      updatedAt: data.updatedAt,
     };
   },
 
   delete: async (id: string): Promise<void> => {
-    const { error } = await client
-      .from('Transaction')
-      .delete()
-      .eq('id', id);
+    const { error } = await client.from("Transaction").delete().eq("id", id);
 
     if (error) throw new Error(error.message);
-  }
+  },
 };

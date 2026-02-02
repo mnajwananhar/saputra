@@ -1,5 +1,9 @@
-
-import { MonthlyData, ForecastResult, ErrorMetrics, Transaction } from './types';
+import {
+  MonthlyData,
+  ForecastResult,
+  ErrorMetrics,
+  Transaction,
+} from "./types";
 
 /**
  * Rumus Safety Stock (SS):
@@ -14,12 +18,13 @@ export const calculateSafetyStock = (historicalDemands: number[]): number => {
   const daysInMonth = 30;
 
   const maxMonthlyDemand = Math.max(...historicalDemands);
-  const avgMonthlyDemand = historicalDemands.reduce((a, b) => a + b, 0) / historicalDemands.length;
+  const avgMonthlyDemand =
+    historicalDemands.reduce((a, b) => a + b, 0) / historicalDemands.length;
 
   const maxDailyDemand = maxMonthlyDemand / daysInMonth;
   const avgDailyDemand = avgMonthlyDemand / daysInMonth;
 
-  const safetyStock = (maxLT * maxDailyDemand) - (avgLT * avgDailyDemand);
+  const safetyStock = maxLT * maxDailyDemand - avgLT * avgDailyDemand;
   return Math.ceil(safetyStock);
 };
 
@@ -27,10 +32,13 @@ export const calculateSafetyStock = (historicalDemands: number[]): number => {
  * Kalkulasi Single Moving Average (SMA)
  * Menghasilkan peramalan untuk periode berikutnya berdasarkan N bulan terakhir.
  */
-export const calculateSMA = (data: MonthlyData[], n: number): {
-  results: ForecastResult[],
-  metrics: ErrorMetrics,
-  nextPeriodForecast: number
+export const calculateSMA = (
+  data: MonthlyData[],
+  n: number,
+): {
+  results: ForecastResult[];
+  metrics: ErrorMetrics;
+  nextPeriodForecast: number;
 } => {
   const results: ForecastResult[] = [];
   let sumAbsError = 0;
@@ -69,7 +77,7 @@ export const calculateSMA = (data: MonthlyData[], n: number): {
       actual: current.demand,
       forecast: forecast,
       error: error,
-      ape: ape
+      ape: ape,
     });
   }
 
@@ -86,15 +94,21 @@ export const calculateSMA = (data: MonthlyData[], n: number): {
   const metrics: ErrorMetrics = {
     mad: errorCount > 0 ? sumAbsError / errorCount : 0,
     mse: errorCount > 0 ? sumSquaredError / errorCount : 0,
-    mape: errorCount > 0 ? sumApe / errorCount : 0
+    mape: errorCount > 0 ? sumApe / errorCount : 0,
   };
 
   return { results, metrics, nextPeriodForecast: nextForecast };
 };
 
-export const formatNumber = (num: number | null | undefined, decimals: number = 2) => {
-  if (num === null || num === undefined) return '-';
-  return num.toLocaleString('id-ID', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+export const formatNumber = (
+  num: number | null | undefined,
+  decimals: number = 2,
+) => {
+  if (num === null || num === undefined) return "-";
+  return num.toLocaleString("id-ID", {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
 };
 
 export interface DailyTransaction {
@@ -109,7 +123,9 @@ export interface MonthlyDataWithDetails extends MonthlyData {
 /**
  * Function to aggregate daily transactions into monthly data for forecasting
  */
-export const aggregateTransactionsToMonthly = (transactions: Transaction[]): MonthlyData[] => {
+export const aggregateTransactionsToMonthly = (
+  transactions: Transaction[],
+): MonthlyData[] => {
   // Group transactions by month and year, summing the quantities sold
   const monthlySales: Record<string, number> = {};
 
@@ -117,7 +133,7 @@ export const aggregateTransactionsToMonthly = (transactions: Transaction[]): Mon
     const date = new Date(transaction.date);
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
-    const monthYear = `${year}-${String(month).padStart(2, '0')}`; // Format: YYYY-MM
+    const monthYear = `${year}-${String(month).padStart(2, "0")}`; // Format: YYYY-MM
 
     transaction.items.forEach((item) => {
       if (!monthlySales[monthYear]) {
@@ -130,8 +146,21 @@ export const aggregateTransactionsToMonthly = (transactions: Transaction[]): Mon
   // Convert to MonthlyData format
   const months = Object.keys(monthlySales).sort(); // Sort chronologically (YYYY-MM format sorts correctly)
   const monthlyData: MonthlyData[] = months.map((monthYear, index) => {
-    const [year, month] = monthYear.split('-');
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Des'];
+    const [year, month] = monthYear.split("-");
+    const monthNames = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "Mei",
+      "Jun",
+      "Jul",
+      "Agt",
+      "Sep",
+      "Okt",
+      "Nov",
+      "Des",
+    ];
     const monthName = monthNames[parseInt(month) - 1];
     const shortYear = year.slice(-2); // Display year as 2 digits
 
@@ -150,20 +179,29 @@ export const aggregateTransactionsToMonthly = (transactions: Transaction[]): Mon
 /**
  * Function to aggregate daily transactions into monthly data WITH daily transaction details
  */
-export const aggregateTransactionsToMonthlyWithDetails = (transactions: Transaction[]): MonthlyDataWithDetails[] => {
+export const aggregateTransactionsToMonthlyWithDetails = (
+  transactions: Transaction[],
+): MonthlyDataWithDetails[] => {
   if (transactions.length === 0) {
     return [];
   }
 
   // Group transactions by month and year
-  const monthlySales: Record<string, { total: number; dailyDetails: DailyTransaction[] }> = {};
+  const monthlySales: Record<
+    string,
+    { total: number; dailyDetails: DailyTransaction[] }
+  > = {};
 
   transactions.forEach((transaction) => {
     const date = new Date(transaction.date);
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
-    const monthYear = `${year}-${String(month).padStart(2, '0')}`; // Format: YYYY-MM
-    const dateStr = date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+    const monthYear = `${year}-${String(month).padStart(2, "0")}`; // Format: YYYY-MM
+    const dateStr = date.toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
 
     if (!monthlySales[monthYear]) {
       monthlySales[monthYear] = { total: 0, dailyDetails: [] };
@@ -173,13 +211,15 @@ export const aggregateTransactionsToMonthlyWithDetails = (transactions: Transact
       monthlySales[monthYear].total += item.quantity;
 
       // Check if we already have an entry for this date
-      const existingDaily = monthlySales[monthYear].dailyDetails.find((d) => d.date === dateStr);
+      const existingDaily = monthlySales[monthYear].dailyDetails.find(
+        (d) => d.date === dateStr,
+      );
       if (existingDaily) {
         existingDaily.quantity += item.quantity;
       } else {
         monthlySales[monthYear].dailyDetails.push({
           date: dateStr,
-          quantity: item.quantity
+          quantity: item.quantity,
         });
       }
     });
@@ -187,26 +227,43 @@ export const aggregateTransactionsToMonthlyWithDetails = (transactions: Transact
 
   // Convert to MonthlyDataWithDetails format
   const months = Object.keys(monthlySales).sort(); // Sort chronologically (YYYY-MM format sorts correctly)
-  const monthlyData: MonthlyDataWithDetails[] = months.map((monthYear, index) => {
-    const [year, month] = monthYear.split('-');
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Des'];
-    const monthName = monthNames[parseInt(month) - 1];
-    const shortYear = year.slice(-2); // Display year as 2 digits
+  const monthlyData: MonthlyDataWithDetails[] = months.map(
+    (monthYear, index) => {
+      const [year, month] = monthYear.split("-");
+      const monthNames = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "Mei",
+        "Jun",
+        "Jul",
+        "Agt",
+        "Sep",
+        "Okt",
+        "Nov",
+        "Des",
+      ];
+      const monthName = monthNames[parseInt(month) - 1];
+      const shortYear = year.slice(-2); // Display year as 2 digits
 
-    // Sort daily transactions by date
-    const sortedDailyTransactions = monthlySales[monthYear].dailyDetails.sort((a, b) => {
-      return new Date(a.date).getTime() - new Date(b.date).getTime();
-    });
+      // Sort daily transactions by date
+      const sortedDailyTransactions = monthlySales[monthYear].dailyDetails.sort(
+        (a, b) => {
+          return new Date(a.date).getTime() - new Date(b.date).getTime();
+        },
+      );
 
-    return {
-      id: `monthly-${index}`,
-      month: monthName,
-      year: parseInt(year),
-      demand: monthlySales[monthYear].total,
-      periodLabel: `${monthName}-${shortYear}`,
-      dailyTransactions: sortedDailyTransactions,
-    };
-  });
+      return {
+        id: `monthly-${index}`,
+        month: monthName,
+        year: parseInt(year),
+        demand: monthlySales[monthYear].total,
+        periodLabel: `${monthName}-${shortYear}`,
+        dailyTransactions: sortedDailyTransactions,
+      };
+    },
+  );
 
   return monthlyData;
 };

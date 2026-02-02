@@ -1,27 +1,28 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { useProducts } from '../contexts/ProductContext';
-import { useSuppliers } from '../contexts/SupplierContext';
-import { Plus, Edit2, Save, X, Search } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from "react";
+import { useProducts } from "../contexts/ProductContext";
+import { useSuppliers } from "../contexts/SupplierContext";
+import { Plus, Edit2, Save, X, Search } from "lucide-react";
 
 const ProductManagement: React.FC = () => {
-  const { products, loading, addProduct, updateProduct, deleteProduct } = useProducts();
+  const { products, loading, addProduct, updateProduct, deleteProduct } =
+    useProducts();
   const { suppliers, loading: suppliersLoading } = useSuppliers();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [formData, setFormData] = useState({
-    name: '',
-    unit: '',
+    name: "",
+    unit: "",
     price: 0,
     cost: 0,
     currentStock: 0,
     safetyStock: 0,
-    supplierId: ''
+    supplierId: "",
   });
 
   useEffect(() => {
     if (editingId) {
-      const product = products.find(p => p.id === editingId);
+      const product = products.find((p) => p.id === editingId);
       if (product) {
         setFormData({
           name: product.name,
@@ -30,7 +31,7 @@ const ProductManagement: React.FC = () => {
           cost: product.cost,
           currentStock: product.stock.currentStock,
           safetyStock: product.stock.safetyStock,
-          supplierId: product.supplierId || ''
+          supplierId: product.supplierId || "",
         });
       }
     }
@@ -47,9 +48,9 @@ const ProductManagement: React.FC = () => {
         cost: formData.cost,
         stock: {
           currentStock: formData.currentStock,
-          safetyStock: formData.safetyStock
+          safetyStock: formData.safetyStock,
         },
-        supplierId: formData.supplierId
+        supplierId: formData.supplierId,
       });
     } else {
       addProduct({
@@ -59,9 +60,9 @@ const ProductManagement: React.FC = () => {
         cost: formData.cost,
         stock: {
           currentStock: formData.currentStock,
-          safetyStock: formData.safetyStock
+          safetyStock: formData.safetyStock,
         },
-        supplierId: formData.supplierId
+        supplierId: formData.supplierId,
       });
     }
 
@@ -70,13 +71,13 @@ const ProductManagement: React.FC = () => {
 
   const resetForm = () => {
     setFormData({
-      name: '',
-      unit: '',
+      name: "",
+      unit: "",
       price: 0,
       cost: 0,
       currentStock: 0,
       safetyStock: 0,
-      supplierId: ''
+      supplierId: "",
     });
     setEditingId(null);
     setIsModalOpen(false);
@@ -91,20 +92,20 @@ const ProductManagement: React.FC = () => {
       cost: product.cost,
       currentStock: product.stock.currentStock,
       safetyStock: product.stock.safetyStock,
-      supplierId: product.supplierId || ''
+      supplierId: product.supplierId || "",
     });
     setIsModalOpen(true);
   };
 
   const handleDelete = (id: string) => {
-    if (window.confirm('Apakah Anda yakin ingin menghapus produk ini?')) {
+    if (window.confirm("Apakah Anda yakin ingin menghapus produk ini?")) {
       deleteProduct(id);
     }
   };
 
   const filteredProducts = useMemo(() => {
     const normalizedQuery = searchQuery.toLowerCase().trim();
-    
+
     if (!normalizedQuery) {
       return products;
     }
@@ -113,7 +114,8 @@ const ProductManagement: React.FC = () => {
       const supplier = suppliers.find((s) => s.id === product.supplierId);
       const matchesName = product.name.toLowerCase().includes(normalizedQuery);
       const matchesUnit = product.unit.toLowerCase().includes(normalizedQuery);
-      const matchesSupplier = supplier?.name.toLowerCase().includes(normalizedQuery) ?? false;
+      const matchesSupplier =
+        supplier?.name.toLowerCase().includes(normalizedQuery) ?? false;
 
       return matchesName || matchesUnit || matchesSupplier;
     });
@@ -131,8 +133,12 @@ const ProductManagement: React.FC = () => {
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h1 className="text-3xl md:text-5xl font-heading font-extrabold text-slate-900 tracking-tighter leading-none uppercase">Produk</h1>
-          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] mt-3">Manajemen Data Produk</p>
+          <h1 className="text-3xl md:text-5xl font-heading font-extrabold text-slate-900 tracking-tighter leading-none uppercase">
+            Produk
+          </h1>
+          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] mt-3">
+            Manajemen Data Produk
+          </p>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
@@ -158,13 +164,27 @@ const ProductManagement: React.FC = () => {
         <table className="w-full text-left">
           <thead className="bg-slate-50/50 text-slate-400">
             <tr>
-              <th className="px-8 py-6 text-[10px] font-bold uppercase tracking-widest">Nama</th>
-              <th className="px-6 py-6 text-[10px] font-bold uppercase tracking-widest">Satuan</th>
-              <th className="px-6 py-6 text-[10px] font-bold uppercase tracking-widest">Harga Jual</th>
-              <th className="px-6 py-6 text-[10px] font-bold uppercase tracking-widest">Harga Beli</th>
-              <th className="px-6 py-6 text-[10px] font-bold uppercase tracking-widest">Stok</th>
-              <th className="px-6 py-6 text-[10px] font-bold uppercase tracking-widest">Supplier</th>
-              <th className="px-6 py-6 text-[10px] font-bold uppercase tracking-widest text-center">Aksi</th>
+              <th className="px-8 py-6 text-[10px] font-bold uppercase tracking-widest">
+                Nama
+              </th>
+              <th className="px-6 py-6 text-[10px] font-bold uppercase tracking-widest">
+                Satuan
+              </th>
+              <th className="px-6 py-6 text-[10px] font-bold uppercase tracking-widest">
+                Harga Jual
+              </th>
+              <th className="px-6 py-6 text-[10px] font-bold uppercase tracking-widest">
+                Harga Beli
+              </th>
+              <th className="px-6 py-6 text-[10px] font-bold uppercase tracking-widest">
+                Stok
+              </th>
+              <th className="px-6 py-6 text-[10px] font-bold uppercase tracking-widest">
+                Supplier
+              </th>
+              <th className="px-6 py-6 text-[10px] font-bold uppercase tracking-widest text-center">
+                Aksi
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -174,22 +194,38 @@ const ProductManagement: React.FC = () => {
                   <div className="flex flex-col items-center gap-3">
                     <Search className="h-12 w-12 text-slate-300" />
                     <p className="text-slate-500 font-bold text-sm">
-                      {searchQuery ? 'Tidak ada produk yang cocok dengan pencarian' : 'Belum ada data produk'}
+                      {searchQuery
+                        ? "Tidak ada produk yang cocok dengan pencarian"
+                        : "Belum ada data produk"}
                     </p>
                   </div>
                 </td>
               </tr>
             ) : (
               filteredProducts.map((product) => {
-                const supplier = suppliers.find((s) => s.id === product.supplierId);
+                const supplier = suppliers.find(
+                  (s) => s.id === product.supplierId,
+                );
                 return (
                   <tr key={product.id} className="hover:bg-slate-50/50">
-                    <td className="px-8 py-6 font-bold text-slate-900 text-[11px] uppercase tracking-widest">{product.name}</td>
-                    <td className="px-6 py-6 text-slate-600 font-bold text-[11px]">{product.unit}</td>
-                    <td className="px-6 py-6 text-slate-600 font-bold text-[11px]">Rp {product.price.toLocaleString('id-ID')}</td>
-                    <td className="px-6 py-6 text-slate-600 font-bold text-[11px]">Rp {product.cost.toLocaleString('id-ID')}</td>
-                    <td className="px-6 py-6 text-slate-600 font-bold text-[11px]">{product.stock.currentStock} {product.unit}</td>
-                    <td className="px-6 py-6 text-slate-600 font-bold text-[11px]">{supplier?.name || '-'}</td>
+                    <td className="px-8 py-6 font-bold text-slate-900 text-[11px] uppercase tracking-widest">
+                      {product.name}
+                    </td>
+                    <td className="px-6 py-6 text-slate-600 font-bold text-[11px]">
+                      {product.unit}
+                    </td>
+                    <td className="px-6 py-6 text-slate-600 font-bold text-[11px]">
+                      Rp {product.price.toLocaleString("id-ID")}
+                    </td>
+                    <td className="px-6 py-6 text-slate-600 font-bold text-[11px]">
+                      Rp {product.cost.toLocaleString("id-ID")}
+                    </td>
+                    <td className="px-6 py-6 text-slate-600 font-bold text-[11px]">
+                      {product.stock.currentStock} {product.unit}
+                    </td>
+                    <td className="px-6 py-6 text-slate-600 font-bold text-[11px]">
+                      {supplier?.name || "-"}
+                    </td>
                     <td className="px-6 py-6 text-center">
                       <div className="flex justify-center gap-2">
                         <button
@@ -219,17 +255,21 @@ const ProductManagement: React.FC = () => {
         <div className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-[2rem] w-full max-w-md p-8">
             <h3 className="text-xl font-heading font-extrabold text-slate-900 tracking-tighter uppercase mb-6">
-              {editingId ? 'Edit Produk' : 'Tambah Produk'}
+              {editingId ? "Edit Produk" : "Tambah Produk"}
             </h3>
 
             <form onSubmit={handleSubmit}>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Nama Produk *</label>
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">
+                    Nama Produk *
+                  </label>
                   <input
                     type="text"
                     value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
                     className="w-full px-4 py-3 border-2 border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all"
                     required
                   />
@@ -237,26 +277,36 @@ const ProductManagement: React.FC = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Satuan *</label>
+                    <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">
+                      Satuan *
+                    </label>
                     <input
                       type="text"
                       value={formData.unit}
-                      onChange={(e) => setFormData({...formData, unit: e.target.value})}
+                      onChange={(e) =>
+                        setFormData({ ...formData, unit: e.target.value })
+                      }
                       className="w-full px-4 py-3 border-2 border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Supplier</label>
+                    <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">
+                      Supplier
+                    </label>
                     <select
                       value={formData.supplierId}
-                      onChange={(e) => setFormData({...formData, supplierId: e.target.value})}
+                      onChange={(e) =>
+                        setFormData({ ...formData, supplierId: e.target.value })
+                      }
                       className="w-full px-4 py-3 border-2 border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all"
                     >
                       <option value="">Pilih Supplier</option>
-                      {suppliers.map(supplier => (
-                        <option key={supplier.id} value={supplier.id}>{supplier.name}</option>
+                      {suppliers.map((supplier) => (
+                        <option key={supplier.id} value={supplier.id}>
+                          {supplier.name}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -264,22 +314,36 @@ const ProductManagement: React.FC = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Harga Jual *</label>
+                    <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">
+                      Harga Jual *
+                    </label>
                     <input
                       type="number"
                       value={formData.price}
-                      onChange={(e) => setFormData({...formData, price: Number(e.target.value)})}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          price: Number(e.target.value),
+                        })
+                      }
                       className="w-full px-4 py-3 border-2 border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Harga Beli *</label>
+                    <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">
+                      Harga Beli *
+                    </label>
                     <input
                       type="number"
                       value={formData.cost}
-                      onChange={(e) => setFormData({...formData, cost: Number(e.target.value)})}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          cost: Number(e.target.value),
+                        })
+                      }
                       className="w-full px-4 py-3 border-2 border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all"
                       required
                     />
@@ -288,11 +352,18 @@ const ProductManagement: React.FC = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Stok Saat Ini</label>
+                    <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">
+                      Stok Saat Ini
+                    </label>
                     <input
                       type="number"
                       value={formData.currentStock}
-                      onChange={(e) => setFormData({...formData, currentStock: Number(e.target.value)})}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          currentStock: Number(e.target.value),
+                        })
+                      }
                       className="w-full px-4 py-3 border-2 border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all"
                     />
                   </div>
@@ -312,7 +383,7 @@ const ProductManagement: React.FC = () => {
                   className="flex-1 px-4 py-3.5 bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-indigo-700 transition-all flex items-center justify-center gap-2"
                 >
                   <Save className="h-4 w-4" />
-                  {editingId ? 'Simpan' : 'Tambah'}
+                  {editingId ? "Simpan" : "Tambah"}
                 </button>
               </div>
             </form>
