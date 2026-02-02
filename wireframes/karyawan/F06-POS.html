@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F06 - POS Karyawan | Wireframe</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Inter, sans-serif;
+        }
+        body {
+            background: #e0e0e0;
+            padding: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+        .wrapper {
+            max-width: 1200px;
+            width: 100%;
+        }
+        .page-code {
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .container {
+            display: flex;
+            gap: 12px;
+        }
+        .main-panel {
+            flex: 1;
+            border: 1px solid #000;
+            background: #fff;
+        }
+        .nav-panel {
+            width: 150px;
+            border: 1px solid #000;
+            padding: 10px;
+            font-size: 12px;
+            background: #fff;
+        }
+        .nav-panel h4 {
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        .nav-panel ul {
+            list-style: disc;
+            padding-left: 15px;
+        }
+        .nav-panel li {
+            margin-bottom: 5px;
+            line-height: 1.3;
+        }
+        .color-info {
+            margin-top: 12px;
+            border: 1px solid #000;
+            padding: 10px;
+            font-size: 9px;
+            line-height: 1.5;
+            background: #fff;
+        }
+        /* Layout */
+        .app-layout {
+            display: flex;
+        }
+        .sidebar {
+            width: 288px;
+            background: #fff;
+            border-right: 1px solid #ccc;
+            padding: 24px;
+        }
+        .sidebar-logo {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        .sidebar-accent {
+            width: 24px;
+            height: 3px;
+            background: #000;
+            margin-bottom: 20px;
+        }
+        .sidebar-menu {
+            list-style: none;
+        }
+        .sidebar-menu li {
+            padding: 16px 20px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+        }
+        .sidebar-menu li.active {
+            background: #000;
+            color: #fff;
+        }
+        .sidebar-user {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ccc;
+        }
+        .sidebar-user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        .sidebar-user-avatar {
+            width: 48px;
+            height: 48px;
+            border: 1px solid #ccc;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .sidebar-user-name {
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .sidebar-user-role {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+        }
+        .sidebar-logout {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            background: #fff;
+            font-size: 14px;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+        .content {
+            flex: 1;
+            padding: 40px;
+            background: #f5f5f5;
+        }
+        .pos-layout {
+            display: flex;
+            gap: 16px;
+            height: calc(100vh - 160px);
+        }
+        .product-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .search-header {
+            padding: 16px;
+            border-bottom: 1px solid #ccc;
+        }
+        .search-box {
+            position: relative;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+        .product-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+        .product-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .product-item:hover {
+            background: #f9f9f9;
+        }
+        .product-info {
+            flex: 1;
+        }
+        .product-name {
+            font-weight: bold;
+        }
+        .product-unit {
+            font-size: 12px;
+            color: #666;
+        }
+        .product-price {
+            font-weight: bold;
+        }
+        .add-btn {
+            padding: 8px 16px;
+            background: #000;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .cart-section {
+            width: 380px;
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .cart-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #ccc;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .cart-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .cart-count {
+            font-size: 12px;
+            color: #666;
+        }
+        .cart-items {
+            flex: 1;
+            overflow-y: auto;
+        }
+        .cart-item {
+            padding: 16px 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .cart-item-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .cart-item-name {
+            font-weight: bold;
+        }
+        .cart-item-price {
+            font-size: 12px;
+            color: #666;
+        }
+        .cart-item-controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .quantity-btn {
+            width: 32px;
+            height: 32px;
+            border: 1px solid #ccc;
+            background: #f0f0f0;
+            cursor: pointer;
+        }
+        .quantity-input {
+            width: 40px;
+            height: 32px;
+            text-align: center;
+            border: 1px solid #ccc;
+        }
+        .remove-btn {
+            padding: 4px 8px;
+            color: #000;
+            border: 1px solid #ccc;
+            background: #fff;
+            cursor: pointer;
+        }
+        .cart-total {
+            padding: 16px 20px;
+            border-top: 1px solid #ccc;
+            background: #f0f0f0;
+        }
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .total-label {
+            color: #666;
+        }
+        .total-value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .checkout-btn {
+            width: 100%;
+            padding: 16px;
+            background: #000;
+            color: #fff;
+            border: none;
+            font-size: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+        .checkout-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="page-code">F06</div>
+
+        <div class="container">
+            <div class="main-panel">
+                <div class="app-layout">
+                    <div class="sidebar">
+                        <div class="sidebar-logo">Saputra Jaya</div>
+                        <div class="sidebar-accent"></div>
+
+                        <ul class="sidebar-menu">
+                            <li class="active">POS</li>
+                            <li>Data Master</li>
+                        </ul>
+
+                        <div class="sidebar-dropdown">
+                            <ul style="margin-top: 10px; padding-left: 10px;">
+                                <li style="padding: 12px 16px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; cursor: pointer; border: 1px solid #ccc;">Produk</li>
+                                <li style="padding: 12px 16px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; cursor: pointer; border: 1px solid #ccc;">Supplier</li>
+                            </ul>
+                        </div>
+
+                        <div class="sidebar-user">
+                            <div class="sidebar-user-info">
+                                <div class="sidebar-user-avatar">K</div>
+                                <div>
+                                    <div class="sidebar-user-name">KARYAWAN</div>
+                                    <div class="sidebar-user-role">Karyawan</div>
+                                </div>
+                            </div>
+                            <button class="sidebar-logout">Logout</button>
+                        </div>
+                    </div>
+
+                    <div class="content">
+                        <div class="pos-layout">
+                            <div class="product-section">
+                                <div class="search-header">
+                                    <div class="search-box">
+                                        <input type="text" placeholder="Cari produk...">
+                                    </div>
+                                </div>
+                                <div class="product-list">
+                                    <div class="product-item">
+                                        <div class="product-info">
+                                            <div class="product-name">Minyak Goreng 2L</div>
+                                            <div class="product-unit">Dus</div>
+                                        </div>
+                                        <div class="product-price">Rp 25.000</div>
+                                        <button class="add-btn">+</button>
+                                    </div>
+                                    <div class="product-item">
+                                        <div class="product-info">
+                                            <div class="product-name">Gula Pasir 1Kg</div>
+                                            <div class="product-unit">Pcs</div>
+                                        </div>
+                                        <div class="product-price">Rp 12.000</div>
+                                        <button class="add-btn">+</button>
+                                    </div>
+                                    <div class="product-item">
+                                        <div class="product-info">
+                                            <div class="product-name">Beras 5Kg</div>
+                                            <div class="product-unit">Bal</div>
+                                        </div>
+                                        <div class="product-price">Rp 60.000</div>
+                                        <button class="add-btn">+</button>
+                                    </div>
+                                    <div class="product-item">
+                                        <div class="product-info">
+                                            <div class="product-name">Tepung Terigu 1Kg</div>
+                                            <div class="product-unit">Pcs</div>
+                                        </div>
+                                        <div class="product-price">Rp 8.000</div>
+                                        <button class="add-btn">+</button>
+                                    </div>
+                                    <div class="product-item">
+                                        <div class="product-info">
+                                            <div class="product-name">Garam Dapur 1Kg</div>
+                                            <div class="product-unit">Pcs</div>
+                                        </div>
+                                        <div class="product-price">Rp 5.000</div>
+                                        <button class="add-btn">+</button>
+                                    </div>
+                                    <div class="product-item">
+                                        <div class="product-info">
+                                            <div class="product-name">Sabun Mandi 200gr</div>
+                                            <div class="product-unit">Pcs</div>
+                                        </div>
+                                        <div class="product-price">Rp 4.500</div>
+                                        <button class="add-btn">+</button>
+                                    </div>
+                                    <div class="product-item">
+                                        <div class="product-info">
+                                            <div class="product-name">Shampoo 300ml</div>
+                                            <div class="product-unit">Pcs</div>
+                                        </div>
+                                        <div class="product-price">Rp 15.000</div>
+                                        <button class="add-btn">+</button>
+                                    </div>
+                                    <div class="product-item">
+                                        <div class="product-info">
+                                            <div class="product-name">Pasta Gigi 150gr</div>
+                                            <div class="product-unit">Pcs</div>
+                                        </div>
+                                        <div class="product-price">Rp 10.000</div>
+                                        <button class="add-btn">+</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="cart-section">
+                                <div class="cart-header">
+                                    <div class="cart-title">Keranjang</div>
+                                    <div class="cart-count">3 item</div>
+                                </div>
+                                <div class="cart-items">
+                                    <div class="cart-item">
+                                        <div class="cart-item-header">
+                                            <div class="cart-item-name">Minyak Goreng 2L</div>
+                                            <div class="cart-item-price">Rp 25.000</div>
+                                        </div>
+                                        <div class="cart-item-controls">
+                                            <div class="quantity-controls">
+                                                <button class="quantity-btn">-</button>
+                                                <input type="text" class="quantity-input" value="1">
+                                                <button class="quantity-btn">+</button>
+                                            </div>
+                                            <button class="remove-btn">Hapus</button>
+                                        </div>
+                                    </div>
+                                    <div class="cart-item">
+                                        <div class="cart-item-header">
+                                            <div class="cart-item-name">Gula Pasir 1Kg</div>
+                                            <div class="cart-item-price">Rp 12.000</div>
+                                        </div>
+                                        <div class="cart-item-controls">
+                                            <div class="quantity-controls">
+                                                <button class="quantity-btn">-</button>
+                                                <input type="text" class="quantity-input" value="2">
+                                                <button class="quantity-btn">+</button>
+                                            </div>
+                                            <button class="remove-btn">Hapus</button>
+                                        </div>
+                                    </div>
+                                    <div class="cart-item">
+                                        <div class="cart-item-header">
+                                            <div class="cart-item-name">Beras 5Kg</div>
+                                            <div class="cart-item-price">Rp 60.000</div>
+                                        </div>
+                                        <div class="cart-item-controls">
+                                            <div class="quantity-controls">
+                                                <button class="quantity-btn">-</button>
+                                                <input type="text" class="quantity-input" value="1">
+                                                <button class="quantity-btn">+</button>
+                                            </div>
+                                            <button class="remove-btn">Hapus</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="cart-total">
+                                    <div class="total-row">
+                                        <span class="total-label">Total</span>
+                                        <span class="total-value">Rp 109.000</span>
+                                    </div>
+                                    <button class="checkout-btn">Bayar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-panel">
+                <h4>Navigasi</h4>
+                <ul>
+                    <li>Klik POS untuk tetap di F06</li>
+                    <li>Klik Data Master untuk menuju ke F07 (Produk) atau F08 (Supplier)</li>
+                    <li>Klik Logout untuk menuju ke F01</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="color-info">
+            <strong>Warna Background:</strong> #ffffff, #f5f5f5, #f0f0f0, #f9f9f9<br>
+            <strong>Warna Font:</strong> #000000, #666666, #ffffff, #000000<br>
+            <strong>Warna Aksen:</strong> #cccccc, #eeeeee<br>
+            <strong>Jenis Font:</strong> Inter, sans-serif
+        </div>
+    </div>
+</body>
+</html>

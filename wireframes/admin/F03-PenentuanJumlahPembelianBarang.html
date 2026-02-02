@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>F05 - Manajemen Karyawan Admin | Wireframe</title>
+    <title>F03 - Rencana Beli Admin | Wireframe</title>
     <style>
         * {
             margin: 0;
@@ -165,70 +165,54 @@
             letter-spacing: 0.2em;
             margin-top: 8px;
         }
-        .add-btn {
-            padding: 14px 24px;
-            background: #000;
-            color: #fff;
-            border: none;
-            font-size: 12px;
-            text-transform: uppercase;
-            font-weight: bold;
-            cursor: pointer;
+        .search-box {
+            position: relative;
+            width: 300px;
         }
-        .form-section {
-            background: #fff;
-            border: 1px solid #ccc;
-            padding: 32px;
-            margin-bottom: 32px;
-            border-radius: 8px;
-        }
-        .form-title {
-            font-size: 20px;
-            font-weight: bold;
-            text-transform: uppercase;
-            margin-bottom: 24px;
-        }
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-        }
-        .form-group {
-            margin-bottom: 16px;
-        }
-        .form-group label {
-            display: block;
-            font-size: 12px;
-            text-transform: uppercase;
-            color: #666;
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
-        .form-group input, .form-group select {
+        .search-box input {
             width: 100%;
             padding: 12px 16px;
             border: 1px solid #ccc;
             font-size: 14px;
         }
-        .form-actions {
-            display: flex;
-            gap: 12px;
-            margin-top: 16px;
-        }
-        .form-actions button {
-            padding: 12px 16px;
+        .filter-section {
+            background: #f0f0f0;
             border: 1px solid #ccc;
-            font-size: 12px;
-            text-transform: uppercase;
+            padding: 16px;
+            margin-bottom: 24px;
+            border-radius: 8px;
+        }
+        .filter-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .filter-header span {
+            margin-right: 8px;
+            font-size: 14px;
             font-weight: bold;
+        }
+        .filter-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .filter-controls button {
+            padding: 8px;
+            border: 1px solid #ccc;
+            background: #fff;
             cursor: pointer;
         }
-        .form-actions .save-btn {
-            background: #000;
-            color: #fff;
+        .filter-controls select {
+            padding: 8px;
+            border: 1px solid #ccc;
+            background: #fff;
         }
-        .form-actions .cancel-btn {
-            background: #f0f0f0;
+        .filter-info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 8px;
+            text-align: right;
         }
         .table-container {
             border: 1px solid #ccc;
@@ -249,45 +233,36 @@
             background: #f0f0f0;
             border-bottom: 1px solid #ccc;
         }
+        th:nth-child(6) {
+            text-align: right;
+            background: #e0e0e0;
+        }
         td {
             padding: 16px 20px;
             border-bottom: 1px solid #eee;
             font-size: 14px;
         }
+        td:nth-child(6) {
+            text-align: right;
+            font-weight: bold;
+            background: #f9f9f9;
+        }
         tr:hover {
             background: #f9f9f9;
         }
-        .role-badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 10px;
+        .product-info {
             font-weight: bold;
             text-transform: uppercase;
         }
-        .role-owner {
-            background: #f0f0f0;
-            color: #000;
-        }
-        .role-employee {
-            background: #f0f0f0;
-            color: #000;
-        }
-        .action-buttons {
-            display: flex;
-            gap: 8px;
-        }
-        .action-btn {
-            padding: 8px;
-            border: 1px solid #ccc;
-            background: #fff;
-            cursor: pointer;
+        .supplier-info {
             font-size: 12px;
+            color: #666;
+            margin-top: 4px;
         }
-        .edit-input {
-            padding: 8px;
-            border: 1px solid #ccc;
-            width: 100px;
+        .warning-info {
             font-size: 12px;
+            color: #000;
+            margin-top: 4px;
         }
         .pagination {
             display: flex;
@@ -320,7 +295,7 @@
 </head>
 <body>
     <div class="wrapper">
-        <div class="page-code">F05</div>
+        <div class="page-code">F03</div>
 
         <div class="container">
             <div class="main-panel">
@@ -331,9 +306,9 @@
 
                         <ul class="sidebar-menu">
                             <li>Dashboard</li>
-                            <li>Penentuan Jumlah Pembelian Barang</li>
+                            <li class="active">Penentuan Jumlah Pembelian Barang</li>
                             <li>Data Historis</li>
-                            <li class="active">Manajemen Karyawan</li>
+                            <li>Manajemen Karyawan</li>
                         </ul>
 
                         <div class="sidebar-user">
@@ -351,38 +326,41 @@
                     <div class="content">
                         <div class="page-header">
                             <div>
-                                <h1 class="page-title">Manajemen Karyawan</h1>
-                                <p class="page-subtitle">Kelola akun karyawan</p>
+                                <h1 class="page-title">Penentuan Jumlah Pembelian Barang</h1>
+                                <p class="page-subtitle">Target Stok: Maret 2026 • Data: Nov-23 s/d Feb-26</p>
                             </div>
-                            <button class="add-btn">Tambah Karyawan</button>
+                            <div class="search-box">
+                                <input type="text" placeholder="Cari produk atau supplier...">
+                            </div>
                         </div>
 
-                        <div class="form-section">
-                            <h3 class="form-title">Tambah Karyawan Baru</h3>
-                            <div class="form-grid">
-                                <div class="form-group">
-                                    <label>Username</label>
-                                    <input type="text" placeholder="username">
-                                </div>
-                                <div class="form-group">
-                                    <label>Nama Lengkap</label>
-                                    <input type="text" placeholder="Nama Lengkap">
-                                </div>
-                                <div class="form-group">
-                                    <label>Password</label>
-                                    <input type="password" placeholder="••••••">
-                                </div>
-                                <div class="form-group">
-                                    <label>Role</label>
-                                    <select>
-                                        <option value="employee">Karyawan</option>
-                                        <option value="owner">Pemilik</option>
-                                    </select>
-                                </div>
+                        <div class="filter-section">
+                            <div class="filter-header">
+                                <span>PERIODE TARGET:</span>
                             </div>
-                            <div class="form-actions">
-                                <button class="save-btn">Simpan</button>
-                                <button class="cancel-btn">Batal</button>
+                            <div class="filter-controls">
+                                <button>&lt;</button>
+                                <select>
+                                    <option>Januari</option>
+                                    <option>Februari</option>
+                                    <option selected>Maret</option>
+                                    <option>April</option>
+                                    <option>Mei</option>
+                                    <option>Juni</option>
+                                    <option>Juli</option>
+                                    <option>Agustus</option>
+                                    <option>September</option>
+                                    <option>Oktober</option>
+                                    <option>November</option>
+                                    <option>Desember</option>
+                                </select>
+                                <select>
+                                    <option>2024</option>
+                                    <option>2025</option>
+                                    <option selected>2026</option>
+                                </select>
+                                <button>&gt;</button>
+                                <span class="filter-info">Menggunakan 24 bulan data kebelakang</span>
                             </div>
                         </div>
 
@@ -390,62 +368,76 @@
                             <table>
                                 <thead>
                                     <tr>
-                                        <th>Username</th>
-                                        <th>Nama</th>
-                                        <th>Role</th>
-                                        <th>Aksi</th>
+                                        <th>Nama Produk</th>
+                                        <th>Satuan</th>
+                                        <th>Ramalan Kebutuhan</th>
+                                        <th>Safety Stock</th>
+                                        <th>Stok Gudang</th>
+                                        <th>Rekomendasi Order</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td>admin</td>
-                                        <td>Administrator</td>
-                                        <td><span class="role-badge role-owner">Pemilik</span></td>
                                         <td>
-                                            <div class="action-buttons">
-                                                <button class="action-btn">Edit</button>
-                                                <button class="action-btn">Hapus</button>
-                                            </div>
+                                            <div class="product-info">Minyak Goreng 2L</div>
+                                            <div class="supplier-info">Supplier: PT. Sumber Makmur</div>
                                         </td>
+                                        <td style="text-align: right;">DUS</td>
+                                        <td style="text-align: right;">85</td>
+                                        <td style="text-align: right; color: #000;">+20</td>
+                                        <td style="text-align: right;">50</td>
+                                        <td style="text-align: right; background: #f0f0f0;">55</td>
                                     </tr>
                                     <tr>
-                                        <td>karyawan1</td>
-                                        <td>Budi Santoso</td>
-                                        <td><span class="role-badge role-employee">Karyawan</span></td>
                                         <td>
-                                            <div class="action-buttons">
-                                                <button class="action-btn">Edit</button>
-                                                <button class="action-btn">Hapus</button>
-                                            </div>
+                                            <div class="product-info">Gula Pasir 1Kg</div>
+                                            <div class="supplier-info">Supplier: CV. Manis Abadi</div>
                                         </td>
+                                        <td style="text-align: right;">PCS</td>
+                                        <td style="text-align: right;">100</td>
+                                        <td style="text-align: right; color: #000;">+30</td>
+                                        <td style="text-align: right;">120</td>
+                                        <td style="text-align: right; background: #f0f0f0;">10</td>
                                     </tr>
                                     <tr>
-                                        <td>karyawan2</td>
-                                        <td>Siti Nurhaliza</td>
-                                        <td><span class="role-badge role-employee">Karyawan</span></td>
                                         <td>
-                                            <div class="action-buttons">
-                                                <button class="action-btn">Edit</button>
-                                                <button class="action-btn">Hapus</button>
-                                            </div>
+                                            <div class="product-info">Beras 5Kg</div>
+                                            <div class="supplier-info">Supplier: UD. Sinar Padi</div>
+                                            <div class="warning-info">⚠️ Data hanya 2 bulan</div>
                                         </td>
+                                        <td style="text-align: right;">BAL</td>
+                                        <td style="text-align: right;">60</td>
+                                        <td style="text-align: right; color: #000;">+15</td>
+                                        <td style="text-align: right;">30</td>
+                                        <td style="text-align: right; background: #f0f0f0;">45</td>
                                     </tr>
                                     <tr>
-                                        <td>karyawan3</td>
-                                        <td>Andi Pratama</td>
-                                        <td><span class="role-badge role-employee">Karyawan</span></td>
                                         <td>
-                                            <div class="action-buttons">
-                                                <button class="action-btn">Edit</button>
-                                                <button class="action-btn">Hapus</button>
-                                            </div>
+                                            <div class="product-info">Tepung Terigu 1Kg</div>
+                                            <div class="supplier-info">Supplier: PT. Segar Tani</div>
                                         </td>
+                                        <td style="text-align: right;">PCS</td>
+                                        <td style="text-align: right;">45</td>
+                                        <td style="text-align: right; color: #000;">+10</td>
+                                        <td style="text-align: right;">25</td>
+                                        <td style="text-align: right; background: #f0f0f0;">30</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="product-info">Garam Dapur 1Kg</div>
+                                            <div class="supplier-info">Supplier: CV. Laut Asin</div>
+                                        </td>
+                                        <td style="text-align: right;">PCS</td>
+                                        <td style="text-align: right;">75</td>
+                                        <td style="text-align: right; color: #000;">+25</td>
+                                        <td style="text-align: right;">40</td>
+                                        <td style="text-align: right; background: #f0f0f0;">60</td>
                                     </tr>
                                 </tbody>
                             </table>
                             
                             <div class="pagination">
-                                <div class="pagination-info">Menampilkan 1-4 dari 4 karyawan • 10 / halaman</div>
+                                <div class="pagination-info">Menampilkan 1-5 dari 5 produk • 10 / halaman</div>
                                 <div class="pagination-controls">
                                     <select>
                                         <option>10 / halaman</option>
@@ -468,18 +460,18 @@
                 <h4>Navigasi</h4>
                 <ul>
                     <li>Klik Dashboard untuk menuju ke F02</li>
-                    <li>Klik Penentuan Jumlah Pembelian Barang untuk menuju ke F03</li>
+                    <li>Klik Penentuan Jumlah Pembelian Barang untuk tetap di F03</li>
                     <li>Klik Data Historis untuk menuju ke F04</li>
-                    <li>Klik Manajemen Karyawan untuk tetap di F05</li>
+                    <li>Klik Manajemen Karyawan untuk menuju ke F05</li>
                     <li>Klik Logout untuk menuju ke F01</li>
                 </ul>
             </div>
         </div>
 
         <div class="color-info">
-            <strong>Warna Background:</strong> #ffffff, #f5f5f5, #f0f0f0, #f9f9f9<br>
+            <strong>Warna Background:</strong> #ffffff, #f5f5f5, #f0f0f0, #e6f7ff, #f9f9f9<br>
             <strong>Warna Font:</strong> #000000, #666666, #ffffff<br>
-            <strong>Warna Aksen:</strong> #cccccc, #eeeeee, #ffcc80, #e0e0e0<br>
+            <strong>Warna Aksen:</strong> #cccccc, #eeeeee, #0000ff, #ff0000<br>
             <strong>Jenis Font:</strong> Inter, sans-serif
         </div>
     </div>

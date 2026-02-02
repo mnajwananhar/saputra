@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>F05 - Manajemen Karyawan Admin | Wireframe</title>
+    <title>F08 - Manajemen Supplier Karyawan | Wireframe</title>
     <style>
         * {
             margin: 0;
@@ -175,60 +175,15 @@
             font-weight: bold;
             cursor: pointer;
         }
-        .form-section {
-            background: #fff;
-            border: 1px solid #ccc;
-            padding: 32px;
-            margin-bottom: 32px;
-            border-radius: 8px;
+        .search-box {
+            position: relative;
+            width: 300px;
         }
-        .form-title {
-            font-size: 20px;
-            font-weight: bold;
-            text-transform: uppercase;
-            margin-bottom: 24px;
-        }
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-        }
-        .form-group {
-            margin-bottom: 16px;
-        }
-        .form-group label {
-            display: block;
-            font-size: 12px;
-            text-transform: uppercase;
-            color: #666;
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
-        .form-group input, .form-group select {
+        .search-box input {
             width: 100%;
             padding: 12px 16px;
             border: 1px solid #ccc;
             font-size: 14px;
-        }
-        .form-actions {
-            display: flex;
-            gap: 12px;
-            margin-top: 16px;
-        }
-        .form-actions button {
-            padding: 12px 16px;
-            border: 1px solid #ccc;
-            font-size: 12px;
-            text-transform: uppercase;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .form-actions .save-btn {
-            background: #000;
-            color: #fff;
-        }
-        .form-actions .cancel-btn {
-            background: #f0f0f0;
         }
         .table-container {
             border: 1px solid #ccc;
@@ -257,37 +212,23 @@
         tr:hover {
             background: #f9f9f9;
         }
-        .role-badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 10px;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-        .role-owner {
-            background: #f0f0f0;
-            color: #000;
-        }
-        .role-employee {
-            background: #f0f0f0;
-            color: #000;
-        }
         .action-buttons {
             display: flex;
             gap: 8px;
         }
         .action-btn {
-            padding: 8px;
+            padding: 8px 12px;
             border: 1px solid #ccc;
             background: #fff;
             cursor: pointer;
             font-size: 12px;
         }
-        .edit-input {
-            padding: 8px;
-            border: 1px solid #ccc;
-            width: 100px;
-            font-size: 12px;
+        .edit-btn {
+            background: #f0f0f0;
+        }
+        .delete-btn {
+            background: #f0f0f0;
+            color: #000;
         }
         .pagination {
             display: flex;
@@ -320,7 +261,7 @@
 </head>
 <body>
     <div class="wrapper">
-        <div class="page-code">F05</div>
+        <div class="page-code">F08</div>
 
         <div class="container">
             <div class="main-panel">
@@ -330,18 +271,23 @@
                         <div class="sidebar-accent"></div>
 
                         <ul class="sidebar-menu">
-                            <li>Dashboard</li>
-                            <li>Penentuan Jumlah Pembelian Barang</li>
-                            <li>Data Historis</li>
-                            <li class="active">Manajemen Karyawan</li>
+                            <li>POS</li>
+                            <li class="active">Data Master</li>
                         </ul>
+
+                        <div class="sidebar-dropdown">
+                            <ul style="margin-top: 10px; padding-left: 10px;">
+                                <li style="padding: 12px 16px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; cursor: pointer; border: 1px solid #ccc;">Produk</li>
+                                <li style="padding: 12px 16px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; cursor: pointer; border: 1px solid #ccc; background: #000; color: #fff;">Supplier</li>
+                            </ul>
+                        </div>
 
                         <div class="sidebar-user">
                             <div class="sidebar-user-info">
-                                <div class="sidebar-user-avatar">A</div>
+                                <div class="sidebar-user-avatar">K</div>
                                 <div>
-                                    <div class="sidebar-user-name">ADMIN</div>
-                                    <div class="sidebar-user-role">Pemilik</div>
+                                    <div class="sidebar-user-name">KARYAWAN</div>
+                                    <div class="sidebar-user-role">Karyawan</div>
                                 </div>
                             </div>
                             <button class="sidebar-logout">Logout</button>
@@ -351,93 +297,93 @@
                     <div class="content">
                         <div class="page-header">
                             <div>
-                                <h1 class="page-title">Manajemen Karyawan</h1>
-                                <p class="page-subtitle">Kelola akun karyawan</p>
+                                <h1 class="page-title">Supplier</h1>
+                                <p class="page-subtitle">Manajemen Data Supplier</p>
                             </div>
-                            <button class="add-btn">Tambah Karyawan</button>
+                            <div class="search-box">
+                                <input type="text" placeholder="Cari supplier...">
+                            </div>
                         </div>
 
-                        <div class="form-section">
-                            <h3 class="form-title">Tambah Karyawan Baru</h3>
-                            <div class="form-grid">
-                                <div class="form-group">
-                                    <label>Username</label>
-                                    <input type="text" placeholder="username">
-                                </div>
-                                <div class="form-group">
-                                    <label>Nama Lengkap</label>
-                                    <input type="text" placeholder="Nama Lengkap">
-                                </div>
-                                <div class="form-group">
-                                    <label>Password</label>
-                                    <input type="password" placeholder="••••••">
-                                </div>
-                                <div class="form-group">
-                                    <label>Role</label>
-                                    <select>
-                                        <option value="employee">Karyawan</option>
-                                        <option value="owner">Pemilik</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="form-actions">
-                                <button class="save-btn">Simpan</button>
-                                <button class="cancel-btn">Batal</button>
-                            </div>
+                        <div style="display: flex; justify-content: flex-end; margin-bottom: 16px;">
+                            <button class="add-btn">Tambah Supplier</button>
                         </div>
 
                         <div class="table-container">
                             <table>
                                 <thead>
                                     <tr>
-                                        <th>Username</th>
                                         <th>Nama</th>
-                                        <th>Role</th>
+                                        <th>Contact Person</th>
+                                        <th>Alamat</th>
+                                        <th>Telepon</th>
+                                        <th>Email</th>
                                         <th>Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td>admin</td>
-                                        <td>Administrator</td>
-                                        <td><span class="role-badge role-owner">Pemilik</span></td>
-                                        <td>
-                                            <div class="action-buttons">
-                                                <button class="action-btn">Edit</button>
-                                                <button class="action-btn">Hapus</button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>karyawan1</td>
+                                        <td>PT. Sumber Makmur</td>
                                         <td>Budi Santoso</td>
-                                        <td><span class="role-badge role-employee">Karyawan</span></td>
+                                        <td>Jl. Raya Bogor No. 123, Jakarta</td>
+                                        <td>021-12345678</td>
+                                        <td>sumbermakmur@email.com</td>
                                         <td>
                                             <div class="action-buttons">
-                                                <button class="action-btn">Edit</button>
-                                                <button class="action-btn">Hapus</button>
+                                                <button class="action-btn edit-btn">Edit</button>
+                                                <button class="action-btn delete-btn">Hapus</button>
                                             </div>
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td>karyawan2</td>
+                                        <td>CV. Manis Abadi</td>
                                         <td>Siti Nurhaliza</td>
-                                        <td><span class="role-badge role-employee">Karyawan</span></td>
+                                        <td>Jl. Sudirman No. 45, Bandung</td>
+                                        <td>022-87654321</td>
+                                        <td>manisabadi@email.com</td>
                                         <td>
                                             <div class="action-buttons">
-                                                <button class="action-btn">Edit</button>
-                                                <button class="action-btn">Hapus</button>
+                                                <button class="action-btn edit-btn">Edit</button>
+                                                <button class="action-btn delete-btn">Hapus</button>
                                             </div>
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td>karyawan3</td>
+                                        <td>UD. Sinar Padi</td>
                                         <td>Andi Pratama</td>
-                                        <td><span class="role-badge role-employee">Karyawan</span></td>
+                                        <td>Jl. Diponegoro No. 67, Surabaya</td>
+                                        <td>031-11223344</td>
+                                        <td>sinarpadi@email.com</td>
                                         <td>
                                             <div class="action-buttons">
-                                                <button class="action-btn">Edit</button>
-                                                <button class="action-btn">Hapus</button>
+                                                <button class="action-btn edit-btn">Edit</button>
+                                                <button class="action-btn delete-btn">Hapus</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>PT. Segar Tani</td>
+                                        <td>Rina Kusuma</td>
+                                        <td>Jl. Gatot Subroto No. 89, Medan</td>
+                                        <td>061-55667788</td>
+                                        <td>segartani@email.com</td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <button class="action-btn edit-btn">Edit</button>
+                                                <button class="action-btn delete-btn">Hapus</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>CV. Laut Asin</td>
+                                        <td>Agus Salim</td>
+                                        <td>Jl. Ahmad Yani No. 101, Semarang</td>
+                                        <td>024-99887766</td>
+                                        <td>lautasin@email.com</td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <button class="action-btn edit-btn">Edit</button>
+                                                <button class="action-btn delete-btn">Hapus</button>
                                             </div>
                                         </td>
                                     </tr>
@@ -445,7 +391,7 @@
                             </table>
                             
                             <div class="pagination">
-                                <div class="pagination-info">Menampilkan 1-4 dari 4 karyawan • 10 / halaman</div>
+                                <div class="pagination-info">Menampilkan 1-5 dari 5 supplier • 10 / halaman</div>
                                 <div class="pagination-controls">
                                     <select>
                                         <option>10 / halaman</option>
@@ -467,19 +413,18 @@
             <div class="nav-panel">
                 <h4>Navigasi</h4>
                 <ul>
-                    <li>Klik Dashboard untuk menuju ke F02</li>
-                    <li>Klik Penentuan Jumlah Pembelian Barang untuk menuju ke F03</li>
-                    <li>Klik Data Historis untuk menuju ke F04</li>
-                    <li>Klik Manajemen Karyawan untuk tetap di F05</li>
+                    <li>Klik POS untuk menuju ke F06</li>
+                    <li>Klik Produk untuk menuju ke F07</li>
+                    <li>Klik Supplier untuk tetap di F08</li>
                     <li>Klik Logout untuk menuju ke F01</li>
                 </ul>
             </div>
         </div>
 
         <div class="color-info">
-            <strong>Warna Background:</strong> #ffffff, #f5f5f5, #f0f0f0, #f9f9f9<br>
-            <strong>Warna Font:</strong> #000000, #666666, #ffffff<br>
-            <strong>Warna Aksen:</strong> #cccccc, #eeeeee, #ffcc80, #e0e0e0<br>
+            <strong>Warna Background:</strong> #ffffff, #f5f5f5, #f0f0f0, #f9f9f9, #ffe6e6<br>
+            <strong>Warna Font:</strong> #000000, #666666, #ffffff, #000000<br>
+            <strong>Warna Aksen:</strong> #cccccc, #eeeeee<br>
             <strong>Jenis Font:</strong> Inter, sans-serif
         </div>
     </div>
