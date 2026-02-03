@@ -41,8 +41,6 @@ export const calculateSMA = (
   nextPeriodForecast: number;
 } => {
   const results: ForecastResult[] = [];
-  let sumAbsError = 0;
-  let sumSquaredError = 0;
   let sumApe = 0;
   let errorCount = 0;
 
@@ -62,8 +60,6 @@ export const calculateSMA = (
 
       error = current.demand - forecast;
       const absError = Math.abs(error);
-      sumAbsError += absError;
-      sumSquaredError += Math.pow(error, 2);
 
       if (current.demand > 0) {
         ape = (absError / current.demand) * 100;
@@ -92,12 +88,37 @@ export const calculateSMA = (
   }
 
   const metrics: ErrorMetrics = {
-    mad: errorCount > 0 ? sumAbsError / errorCount : 0,
-    mse: errorCount > 0 ? sumSquaredError / errorCount : 0,
     mape: errorCount > 0 ? sumApe / errorCount : 0,
   };
 
   return { results, metrics, nextPeriodForecast: nextForecast };
+};
+
+/**
+ * Cari Best N (2/4/6/8) berdasarkan MAPE terendah
+ * Auto select orde terbaik per produk
+ */
+export const findBestN = (data: MonthlyData[]): number => {
+  const possibleN = [2, 4, 6, 8];
+  const validN = possibleN.filter((n) => data.length >= n + 1);
+
+  if (validN.length === 0) {
+    return 2;
+  }
+
+  let bestN = validN[0];
+  let lowestMape = Infinity;
+
+  for (const n of validN) {
+    const { metrics } = calculateSMA(data, n);
+    
+    if (metrics.mape < lowestMape) {
+      lowestMape = metrics.mape;
+      bestN = n;
+    }
+  }
+
+  return bestN;
 };
 
 export const formatNumber = (

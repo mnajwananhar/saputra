@@ -1,13 +1,62 @@
 import React, { useState, useEffect } from 'react';
 import { useProducts } from '../contexts/ProductContext';
 import { useTransactions } from '../contexts/TransactionContext';
-import { Trash2, Plus, Minus, Search, ShoppingBag } from 'lucide-react';
+import { Trash2, Plus, Minus, Search, ShoppingBag, CheckCircle, XCircle } from 'lucide-react';
+
+// Toast Component
+interface ToastProps {
+  message: string;
+  type: 'success' | 'error';
+  onClose: () => void;
+}
+
+const Toast: React.FC<ToastProps> = ({ message, type, onClose }) => {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onClose();
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+    <div className="fixed top-6 right-6 z-50 animate-slide-in">
+      <div className={`flex items-center gap-3 px-5 py-4 rounded-xl shadow-2xl backdrop-blur-sm ${
+        type === 'success' 
+          ? 'bg-gradient-to-r from-emerald-500 to-green-600 text-white' 
+          : 'bg-gradient-to-r from-red-500 to-rose-600 text-white'
+      }`}>
+        {type === 'success' ? (
+          <CheckCircle className="h-6 w-6 flex-shrink-0" />
+        ) : (
+          <XCircle className="h-6 w-6 flex-shrink-0" />
+        )}
+        <span className="font-medium text-sm">{message}</span>
+      </div>
+      <style>{`
+        @keyframes slideIn {
+          0% {
+            opacity: 0;
+            transform: translateX(100%);
+          }
+          100% {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        .animate-slide-in {
+          animation: slideIn 0.3s ease-out forwards;
+        }
+      `}</style>
+    </div>
+  );
+};
 
 const POS: React.FC = () => {
   const { products } = useProducts();
   const { addTransaction } = useTransactions();
   const [cart, setCart] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [filteredProducts, setFilteredProducts] = useState(products);
 
   useEffect(() => {
@@ -83,15 +132,23 @@ const POS: React.FC = () => {
       });
       setCart([]);
       setSearchTerm('');
-      alert('Transaksi berhasil!');
+      setToast({ message: 'Transaksi berhasil!', type: 'success' });
     } catch (error) {
       console.error('Checkout error:', error);
-      alert('Gagal menyimpan transaksi: ' + (error as Error).message);
+      setToast({ message: 'Gagal menyimpan transaksi: ' + (error as Error).message, type: 'error' });
     }
   };
 
   return (
-    <div className="flex h-[calc(100vh-6rem)] gap-4">
+    <>
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+      <div className="flex h-[calc(100vh-6rem)] gap-4">
       {/* Kiri: Daftar Produk */}
       <div className="flex-1 flex flex-col bg-white rounded-2xl border border-slate-200 overflow-hidden">
         {/* Search */}
@@ -222,7 +279,8 @@ const POS: React.FC = () => {
           </button>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

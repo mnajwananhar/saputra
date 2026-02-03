@@ -9,94 +9,67 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  username  String   @unique
-  password  String
-  name      String
-  role      String   @default("employee") // "owner" or "employee"
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String        @id @default(cuid())
+  username    String        @unique
+  password    String
+  name        String
+  role        String        @default("employee")
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  Transaction Transaction[]
 }
 
 model Supplier {
-  id          String     @id @default(cuid())
-  name        String
-  contact     String?
-  address     String?
-  phone       String?
-  email       String?
-  products    Product[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id        String    @id @default(cuid())
+  name      String
+  contact   String?
+  address   String?
+  phone     String?
+  email     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
 }
 
 model Product {
-  id           String           @id @default(cuid())
+  id           String            @id @default(cuid())
   name         String
   unit         String
-  price        Int              @default(0) // Harga jual
-  cost         Int              @default(0) // Harga beli dari supplier
-  currentStock Int              @default(0)
-  safetyStock  Int              @default(0)
-  bestN        Int              @default(4) // Nilai N dengan MAPE terkecil (akan di-calculate otomatis)
-  supplier     Supplier?        @relation(fields: [supplierId], references: [id])
+  price        Int               @default(0)
+  cost         Int               @default(0)
+  currentStock Int               @default(0)
+  safetyStock  Int               @default(0)
+  bestN        Int               @default(4)
   supplierId   String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  supplier     Supplier?         @relation(fields: [supplierId], references: [id])
   transactions TransactionItem[]
-  stockIns     StockIn[]
-  history      HistoricalData[]
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
 }
 
 model Transaction {
-  id            String           @id @default(cuid())
-  date          DateTime         @default(now())
-  totalAmount   Int
-  note          String?
-  items         TransactionItem[]
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
+  id          String            @id @default(cuid())
+  date        DateTime          @default(now())
+  totalAmount Int
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  userId      String?
+  User        User?             @relation(fields: [userId], references: [id])
+  items       TransactionItem[]
+
+  @@index([userId])
 }
 
 model TransactionItem {
-  id            String       @id @default(cuid())
-  transaction   Transaction  @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  id            String      @id @default(cuid())
   transactionId String
-  product       Product      @relation(fields: [productId], references: [id])
   productId     String
   quantity      Int
-  price         Int          // Harga saat transaksi
-  subtotal      Int          // quantity * price
+  price         Int
+  subtotal      Int
+  product       Product     @relation(fields: [productId], references: [id])
+  transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
 
   @@index([transactionId])
-  @@index([productId])
-}
-
-model StockIn {
-  id          String   @id @default(cuid())
-  date        DateTime @default(now())
-  product     Product  @relation(fields: [productId], references: [id])
-  productId   String
-  quantity    Int
-  cost        Int      // Harga beli saat barang masuk
-  note        String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([productId])
-}
-
-model HistoricalData {
-  id          String   @id @default(cuid())
-  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  productId   String
-  month       String   // Jan, Feb, Mar, dll.
-  year        Int
-  demand      Int
-  periodLabel String   // Format: "Jan-24"
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@unique([productId, periodLabel])
   @@index([productId])
 }

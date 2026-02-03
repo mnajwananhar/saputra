@@ -88,7 +88,5 @@ export interface ForecastResult {
 }
 
 export interface ErrorMetrics {
-  mad: number;
-  mse: number;
   mape: number;
 }

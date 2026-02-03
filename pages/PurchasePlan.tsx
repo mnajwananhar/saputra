@@ -6,6 +6,7 @@ import {
   calculateSMA,
   calculateSafetyStock,
   aggregateTransactionsToMonthly,
+  findBestN,
 } from "../utils";
 import {
   Search,
@@ -53,79 +54,235 @@ const PurchasePlan: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  // Default: bulan depan dari sekarang
-  const now = new Date();
-  const defaultTargetMonth = now.getMonth() + 1; // 0-indexed + 1 = next month
+  // Auto-detect latest month from transactions
+  const latestDataDate = useMemo(() => {
+    if (!transactions || transactions.length === 0) {
+      return new Date();
+    }
+
+    const latestDate = transactions.reduce((latest, transaction) => {
+      const transDate = new Date(transaction.date);
+      return transDate > latest ? transDate : latest;
+    }, new Date(0));
+
+    return latestDate;
+  }, [transactions]);
+
+  // Default target = bulan depan dari data terakhir
+  const defaultTargetMonth = latestDataDate.getMonth() + 1; // 0-indexed + 1 = next month
   const defaultTargetYear =
-    defaultTargetMonth > 11 ? now.getFullYear() + 1 : now.getFullYear();
+    defaultTargetMonth > 11
+      ? latestDataDate.getFullYear() + 1
+      : latestDataDate.getFullYear();
   const adjustedDefaultMonth = defaultTargetMonth > 11 ? 0 : defaultTargetMonth;
 
   const [targetMonth, setTargetMonth] = useState(adjustedDefaultMonth); // 0-indexed
   const [targetYear, setTargetYear] = useState(defaultTargetYear);
 
-  // Generate year options (current year - 2 to current year + 2)
+  // Generate year options berdasarkan range data yang ada
   const yearOptions = useMemo(() => {
-    const currentYear = new Date().getFullYear();
-    return Array.from({ length: 5 }, (_, i) => currentYear - 2 + i);
-  }, []);
+    if (!transactions || transactions.length === 0) {
+      const currentYear = new Date().getFullYear();
+      return [currentYear - 1, currentYear];
+    }
+
+    // Cari tahun paling awal dari data
+    const earliestYear = transactions.reduce((earliest, transaction) => {
+      const transYear = new Date(transaction.date).getFullYear();
+      return transYear < earliest ? transYear : earliest;
+    }, latestDataDate.getFullYear());
+
+    const latestYear = latestDataDate.getFullYear();
+
+    // Range dari tahun paling awal sampai latest year (bukan +1, karena cuma forecast +1 bulan)
+    const years: number[] = [];
+    for (let year = earliestYear; year <= latestYear; year++) {
+      years.push(year);
+    }
+
+    return years;
+  }, [transactions, latestDataDate]);
+
+  // Generate month options berdasarkan tahun yang dipilih dan data yang ada
+  const monthOptions = useMemo(() => {
+    if (!transactions || transactions.length === 0) {
+      return Array.from({ length: 12 }, (_, i) => i);
+    }
+
+    // Collect semua bulan yang ada data untuk tahun yang dipilih
+    const monthsInYear = new Set<number>();
+
+    transactions.forEach((transaction) => {
+      const transDate = new Date(transaction.date);
+      if (transDate.getFullYear() === targetYear) {
+        monthsInYear.add(transDate.getMonth());
+      }
+    });
+
+    // Convert ke array dan sort
+    const months = Array.from(monthsInYear).sort((a, b) => a - b);
+
+    // Jika tahun == latest year, tambah +1 bulan untuk forecast target
+    if (targetYear === latestDataDate.getFullYear()) {
+      const nextMonth = latestDataDate.getMonth() + 1;
+      if (nextMonth <= 11 && !months.includes(nextMonth)) {
+        months.push(nextMonth);
+      }
+    }
+
+    return months;
+  }, [transactions, targetYear, latestDataDate]);
 
   // Target periode label
   const targetPeriodLabel = `${MONTHS[targetMonth]} ${targetYear}`;
 
-  // Data range label (24 bulan kebelakang dari target)
+  // Calculate data range: sampai bulan sebelum target
   const dataRangeLabel = useMemo(() => {
-    const targetDate = new Date(targetYear, targetMonth, 1);
-    const startDate = new Date(targetYear, targetMonth - 24, 1);
-    const endDate = new Date(targetYear, targetMonth - 1, 1);
+    // Bulan sebelum target
+    const dataEndMonth = targetMonth === 0 ? 11 : targetMonth - 1;
+    const dataEndYear = targetMonth === 0 ? targetYear - 1 : targetYear;
 
-    const startLabel = `${MONTHS_SHORT[startDate.getMonth()]}-${startDate.getFullYear().toString().slice(-2)}`;
-    const endLabel = `${MONTHS_SHORT[endDate.getMonth()]}-${endDate.getFullYear().toString().slice(-2)}`;
+    const endLabel = `${MONTHS_SHORT[dataEndMonth]}-${dataEndYear.toString().slice(-2)}`;
 
-    return `Data: ${startLabel} s/d ${endLabel}`;
+    return `Data s/d ${endLabel}`;
   }, [targetMonth, targetYear]);
 
   // Navigate month
-  const goToPreviousMonth = () => {
+  const goToPreviousMonth = (): void => {
     if (targetMonth === 0) {
       setTargetMonth(11);
-      setTargetYear(targetYear - 1);
+      setTargetYear((prev) => prev - 1);
     } else {
-      setTargetMonth(targetMonth - 1);
+      setTargetMonth((prev) => prev - 1);
     }
   };
 
-  const goToNextMonth = () => {
+  const goToNextMonth = (): void => {
     if (targetMonth === 11) {
       setTargetMonth(0);
-      setTargetYear(targetYear + 1);
+      setTargetYear((prev) => prev + 1);
     } else {
-      setTargetMonth(targetMonth + 1);
+      setTargetMonth((prev) => prev + 1);
     }
   };
 
   const planData = useMemo(() => {
-    const startDate = new Date(targetYear, targetMonth - 24, 1);
-    const endDate = new Date(targetYear, targetMonth, 0);
+    if (!transactions || transactions.length === 0) {
+      return [];
+    }
 
-    return products.map((product) => {
-      // Filter transactions within the 24 month range
+    // Tentukan range data sampai bulan sebelum target
+    // Misal target = Maret 2026 (targetMonth=2), maka data sampai akhir Feb 2026
+    const dataEndMonth = targetMonth === 0 ? 11 : targetMonth - 1;
+    const dataEndYear = targetMonth === 0 ? targetYear - 1 : targetYear;
+    const endDate = new Date(dataEndYear, dataEndMonth + 1, 0); // Last day of data end month
+
+    console.log("🎯 Target:", MONTHS[targetMonth], targetYear);
+    console.log("📅 Data sampai:", MONTHS[dataEndMonth], dataEndYear);
+    console.log("🔚 End date:", endDate);
+    console.log("📦 Total transactions:", transactions.length);
+
+    // Aggregate semua produk dulu untuk mendapatkan semua bulan yang ada
+    const allMonthlyDataByProduct = new Map<
+      string,
+      { month: number; year: number; demand: number }[]
+    >();
+
+    products.forEach((product) => {
       const productTransactions = transactions.filter((transaction) => {
         if (!transaction.items.some((item) => item.productId === product.id))
           return false;
 
         const transDate = new Date(transaction.date);
-        const isInRange = transDate >= startDate && transDate <= endDate;
-
-        return isInRange;
+        return transDate <= endDate;
       });
 
       const monthlyData = aggregateTransactionsToMonthly(productTransactions);
+      allMonthlyDataByProduct.set(
+        product.id,
+        monthlyData.map((d) => {
+          // d.month is string like "Jan", "Feb", etc - need to convert back to number
+          const monthIndex = [
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "Mei",
+            "Jun",
+            "Jul",
+            "Agt",
+            "Sep",
+            "Okt",
+            "Nov",
+            "Des",
+          ].indexOf(d.month);
+          return {
+            month: monthIndex, // Already 0-indexed
+            year: d.year,
+            demand: d.demand,
+          };
+        }),
+      );
+    });
 
-      const n = product.bestN || 4;
-      const { nextPeriodForecast } = calculateSMA(monthlyData, n);
-      const demands = monthlyData.map((d) => d.demand);
+    // Cari earliest transaction date untuk generate range bulan lengkap
+    const earliestDate = transactions.reduce((earliest, transaction) => {
+      const transDate = new Date(transaction.date);
+      return transDate < earliest ? transDate : earliest;
+    }, endDate);
+
+    // Generate semua bulan dari earliest sampai endDate
+    const sortedMonths: { year: number; month: number }[] = [];
+    const currentDate = new Date(
+      earliestDate.getFullYear(),
+      earliestDate.getMonth(),
+      1,
+    );
+
+    while (currentDate <= endDate) {
+      sortedMonths.push({
+        year: currentDate.getFullYear(),
+        month: currentDate.getMonth(),
+      });
+      currentDate.setMonth(currentDate.getMonth() + 1);
+    }
+
+    return products.map((product) => {
+      const productData = allMonthlyDataByProduct.get(product.id) || [];
+
+      console.log(
+        `📊 ${product.name}: ${productData.length} months data`,
+        productData.slice(0, 3),
+      );
+
+      // Fill missing months dengan 0
+      const filledData = sortedMonths.map(({ year, month }) => {
+        const existing = productData.find(
+          (d) => d.year === year && d.month === month,
+        );
+        return {
+          id: `${product.id}-${year}-${month}`,
+          month: (month + 1).toString().padStart(2, "0"), // Convert back to 1-indexed string
+          year,
+          demand: existing ? existing.demand : 0,
+          periodLabel: `${MONTHS_SHORT[month]}-${year.toString().slice(-2)}`,
+        };
+      });
+
+      // Auto select best N menggunakan findBestN
+      const bestN = findBestN(filledData);
+      const { nextPeriodForecast, metrics } = calculateSMA(filledData, bestN);
+      const demands = filledData.map((d) => d.demand);
       const dynamicSafetyStock = calculateSafetyStock(demands);
       const forecastRounded = Math.ceil(nextPeriodForecast);
+
+      if (product.name.includes("Kapal Api")) {
+        console.log("🔍 Kapal Api Debug:");
+        console.log("  Last 4 months:", filledData.slice(-4));
+        console.log("  Best N:", bestN);
+        console.log("  nextPeriodForecast (raw):", nextPeriodForecast);
+        console.log("  forecastRounded:", forecastRounded);
+      }
 
       const orderQuantity =
         forecastRounded + dynamicSafetyStock - product.stock.currentStock;
@@ -137,8 +294,10 @@ const PurchasePlan: React.FC = () => {
         supplier,
         forecast: forecastRounded,
         calculatedSafety: dynamicSafetyStock,
-        orderQuantity: Math.max(0, orderQuantity),
-        dataMonths: monthlyData.length, // Jumlah bulan data yang tersedia
+        orderQuantity: Math.max(0, Math.ceil(orderQuantity)),
+        dataMonths: filledData.length,
+        bestN, // Store best N yang digunakan
+        mape: metrics.mape, // Store MAPE untuk display
       };
     });
   }, [products, transactions, suppliers, targetMonth, targetYear]);
@@ -231,9 +390,9 @@ const PurchasePlan: React.FC = () => {
                   onChange={(e) => setTargetMonth(parseInt(e.target.value))}
                   className="px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent cursor-pointer"
                 >
-                  {MONTHS.map((month, index) => (
-                    <option key={index} value={index}>
-                      {month}
+                  {monthOptions.map((monthIndex) => (
+                    <option key={monthIndex} value={monthIndex}>
+                      {MONTHS[monthIndex]}
                     </option>
                   ))}
                 </select>
@@ -256,10 +415,6 @@ const PurchasePlan: React.FC = () => {
                 >
                   <ChevronRight className="h-4 w-4 text-slate-600" />
                 </button>
-              </div>
-
-              <div className="text-[10px] text-indigo-600 font-bold uppercase tracking-wider ml-auto">
-                Menggunakan 24 bulan data kebelakang
               </div>
             </div>
           </div>
@@ -301,6 +456,9 @@ const PurchasePlan: React.FC = () => {
                             Supplier: {item.supplier.name}
                           </div>
                         )}
+                        <div className="text-[9px] text-indigo-500 mt-1 font-semibold">
+                          N={item.bestN} • MAPE={item.mape.toFixed(2)}%
+                        </div>
                         {item.dataMonths < 3 && (
                           <div className="text-[9px] text-amber-500 mt-1">
                             ⚠️ Data hanya {item.dataMonths} bulan
